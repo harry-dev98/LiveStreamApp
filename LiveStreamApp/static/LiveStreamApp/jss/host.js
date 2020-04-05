@@ -23,15 +23,37 @@ let isStreaming=false;
 
 var video = document.getElementById('video');
 let dropArea = document.getElementById('drop-area');
-let button = document.getElementById("button");
-let msgBox = document.getElementById("chat")
+// let button = document.getElementById("button");
+let msgBox = document.getElementById("chatBox");
 let peers = document.getElementById("peerstatus");
-let btn_stream = document.getElementById("btn_stream");
+// let btn_stream = document.getElementById("btn_stream");
 let btn_live = document.getElementById("btn_live");
 let liveTag = document.getElementById("live");
+let sendmsg = document.getElementById("submit");
+let txt = document.getElementById("txt");
+let close = document.getElementById("close");
+close.onclick=(e)=>{
+    stopStreaming();
+    liveTag.style.opacity=0;
+}
+// console.log(msgBox);
 
 let fileCount = 0;
 let files;
+
+sendmsg.onclick = (e)=>{
+    let m = txt.value;
+    txt.value="";
+    for(const [u, U] of Object.entries(Users)){
+        U.datachann.send(JSON.stringify({
+            "message" : true,
+            "text" : m
+        }))
+    }
+    let M = document.createElement('p');
+    M.innerText = "Teacher : "+m;
+    msgBox.appendChild(M);
+}
 
 btn_live.onclick = (e)=>{
     console.log("livenow");
@@ -46,7 +68,7 @@ btn_live.onclick = (e)=>{
     }
     video.play();
     btn_live.style.display="none";
-    btn_stream.style.display="block";
+    // btn_stream.style.display="block";
     // btn_stream.innerHTML="Stop";
 }
 
@@ -58,7 +80,7 @@ video.onpause = (e)=>{
         isStreaming=false;
     }
     console.log("pauseddd")
-    btn_stream.style.display = "none";
+    // btn_stream.style.display = "none";
     btn_live.style.display = "block";
 }
 video.onplay=(e)=>{
@@ -71,68 +93,72 @@ video.onplay=(e)=>{
     console.log("plahying videosss");
     // btn_stream.innerHTML = "Stop";
 }
-btn_stream.onclick = event=>{
-    if(btn_stream.innerHTML == "Stop"){
-        video.pause();
-        if(isLive)stopStreaming();
-    }
-    else{
-        video.play();
-        if(isLive)startStreaming();
-    }
-}
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-    }, false);
-});
-['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, (e)=>{
-        dropArea.classList.add('highlight');
-    }, false);
-});
-['dropleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, (e)=>{
-        dropArea.classList.remove('highlight');
-        }, false);
-});
+// btn_stream.onclick = event=>{
+//     if(btn_stream.innerHTML == "Stop"){
+//         video.pause();
+//         if(isLive)stopStreaming();
+//     }
+//     else{
+//         video.play();
+//         if(isLive)startStreaming();
+//     }
+// }
+// ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+//     dropArea.addEventListener(eventName, (e)=>{
+//         e.preventDefault();
+//         e.stopPropagation();
+//     }, false);
+// });
+// ['dragenter', 'dragover'].forEach(eventName => {
+//     dropArea.addEventListener(eventName, (e)=>{
+//         dropArea.classList.add('highlight');
+//     }, false);
+// });
+// ['dropleave', 'drop'].forEach(eventName => {
+//     dropArea.addEventListener(eventName, (e)=>{
+//         dropArea.classList.remove('highlight');
+//         }, false);
+// });
 function addImg(file){
-    let div = document.createElement("div");
-    div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
+    // let div = document.createElement("div");
+    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
     let img = document.createElement('img');
     img.src = file;
     img.alt="Failed To Load Image";
-    img.setAttribute('id' , 'docExpand');
-    // img.setAttribute('width', '100%');
-    img.height = "100%";
-    img.width = "100%";
-    div.appendChild(img);
-    msgBox.appendChild(div);
+    // img.setAttribute('id' , 'docExpand');
+    img.setAttribute('width', '100%');
+    img.setAttribute('height', '100%');
+    // img.height = "100%";
+    // img.width = "100%";
+    msgBox.appendChild(img);
+    // msgBox.appendChild(div);
 }
 function addpdf(file){
-    let div = document.createElement("div");
-    div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
+    // let div = document.createElement("div");
+    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
     var ifrm = document.createElement('iframe');
-    ifrm.setAttribute('id', "docExpand");
+    // ifrm.setAttribute('id', "docExpand");
     // ifrm.setAttribute('height', '100%');
     // ifrm.setAttribute('width', '100%'); // assign an id
     ifrm.height = "100%";
     ifrm.width = "100%";
     ifrm.src = file;
-    div.appendChild(ifrm);
-    msgBox.appendChild(div);
+    msgBox.appendChild(ifrm);
+    // msgBox.appendChild(div);
 }
-dropArea.addEventListener('drop',(e)=>{
-    let dt = e.dataTransfer;
-    files = Array.from(dt.files);
+dropArea.onchange = (e)=>{
+    // let dt = e.dataTransfer;
+    console.log(e.target.files);
+    files = Array.from(e.target.files);
+    // console.log(dropArea);
+    dropArea.value = "";
     if(files.length>1){
         console.log("onefile at a time..");
         return;
     }
-    fileCount = fileCount + files.length;
-    dropArea.style.display="none";
-    setTimeout(async()=>{dropArea.style.display='block';}, 3000);
+    // fileCount = fileCount + files.length;
+    // dropArea.style.display="none";
+    // setTimeout(async()=>{dropArea.style.display='block';}, 3000);
     files.forEach(async (file)=>{   
         let promise = new Promise((resolve, reject)=>{
             if(file) setTimeout(resolve(file), 1000);
@@ -144,7 +170,7 @@ dropArea.addEventListener('drop',(e)=>{
             console.log(err);
         });
     });
-}, false);
+};
 async function send_metaData(DataChann, file){
     console.log("metadata sending of "+file.name);
     let name = file.name;
@@ -187,6 +213,7 @@ async function preview_send(file){
     else if(Ext == "pdf"){
         addpdf(objectURL);
     }
+    console.log("added files...");
     for (const [user, U] of Object.entries(Users)){
     console.log("user..", user);
     let DataChann = U.datachann;
@@ -420,26 +447,38 @@ webCamSocket.onmessage = (event)=>{
             Conn.onerror = (event)=>{
                 console.log(U.user+" Conn encountered an error "+event);
             };
+            Conn.onclose = (event)=>{
+                userCnt--;
+                peers.innerText = "Active "+userCnt;
+                console.log("conn close");
+            }
             Chann.onopen = (event)=>{   
                 console.log(U.user+" Channel's ready state is "+ Chann.readyState);
             };
             Chann.onclose = (event)=>{
-                userCnt--;
-                peers.innerText = "Active "+userCnt;
                 console.log(U.user, " Channel's ready state is ", Chann.readyState);
             };
             Chann.onerror = (event)=>{
                 console.log("Error in DataChannel for "+ U.user+" "+event);
-            }
+            };
             Chann.onnegotiationneeded = (e)=>{
                 console.log("connection negotiated...");
-            }
-            if(isLive==true){
-                localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
-                offer(Conn, user);
-            }
-        });
-    }
-}
-
-
+            };
+            Conn.ondatachannel = (event)=>{
+                var recvChann = event.channel;
+                recvChann.onmessage = (event)=>{
+                    let m = JSON.parse(event.data);
+                    let M = document.createElement('p');
+                    M.innerText = "Student : "+ m.text;
+                    msgBox.appendChild(M);
+            };
+        };
+        if(isLive==true){
+            localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
+            offer(Conn, user);
+        }
+    })
+    .catch((e)=>{
+        console.log("error");
+    });
+}}

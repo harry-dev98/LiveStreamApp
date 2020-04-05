@@ -1,0 +1,134 @@
+{% extends 'LiveStreamApp/base.html' %}
+{% load static %}
+
+{% block prescript %}
+    <script>
+        let webCamSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/host/'
+        );
+        var sess = '{{sess}}';
+        webCamSocket.onopen = function(e){
+            console.log("Socket is connected");
+        }
+        
+    </script>
+    <script src='{% static "LiveStreamApp/jss/adapter.js"%}'></script>
+    <style>
+        ::-webkit-scrollbar{
+            background: #1b1b1b;
+
+        }
+        ::-webkit-scrollbar-thumb{
+            background: #E1E1E1;
+        }
+        
+        body{
+            background: #1b1b1b;
+        }
+        .main{
+            height:100% !important;
+        }
+        .dragside{
+            height:600px !important;
+            overflow: scroll;
+        }
+        .chatside{
+            background: black !important;
+            height:600px !important;
+            overflow: scroll;
+        }
+        .footer{
+            color:white;
+            width:100%;
+            height:50px;
+            text-align: center;
+            background: black;
+            margin-top:100px;
+        }
+        .chatting{
+            height:100%;
+        }
+        .img,.pdf{
+            height:400px;
+        }
+        .videoChat{
+            height:50%;
+        }
+        .send{
+            height:50px;
+            background: blueviolet;
+            color:white;
+            font-size:30px;
+        }
+        .drag_Drop{
+            padding:4px;
+            height:30%;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+<p style="opacity: 0;" id="live" class="glow"> <b><mark id="mark"><b><font color="white">Live!</font></b></mark> </p>
+<marquee id="marquee" behavior="scroll" direction="righ"><b>WebStreaming App by Dr. Holmes Academy, Jeeda</b></marquee>
+<!-- Main Section for conference -->    
+    <div class="container-fluid main">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 chatside"><br>
+           <div id="peerstatus" class="well"><b>Active 0</b></div> 
+            <div class="col-md-12 col-sm-12 col-xl-12 drag_Drop">
+                <div  id="drop-area" data-toggle="tooltip" data-placement="top" title="Drag And Drop Files Here !" class="jumbotron dragDropInner">
+                    <p>Drag & Drop IMG/PNG/PDF Here</p>
+                    <label id="button" for="fileElem">Select some files</label>
+                    <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12 col-xl-12 videoChat">
+                <video id="video" class="vdo" width="100%" controls>
+                    <!-- <source src="pathToVideo" type="video/mp4"> -->
+                        Your browser does not support the video.
+                </video>
+                <center><button style="display: none;" id="btn_stream" class="col-md-6 btn btn-primary">Stop</button>
+                    <button id="btn_live" class="col-md-6 btn btn-warning">Get Live</button></center>
+            </div>
+        </div>
+
+        <div id="chatside" class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 chatside">
+            <!-- This msgBox div will be looped while printing dynamic masseges -->
+            <div id="chat" class="col-md-12 col-sm-12 col-xs-12 col-lg-12 chatting">
+                <!-- <div id="msgContainer" class="col-md-12 msgBox"> -->
+                <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-success msg1">Hello Students</div> -->
+                <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-warning msg2">hello Teacher</div> --> -->
+                <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-success doc docExpand">
+                    <img src="images/download.jpg" width="100%" height="100%" alt="Failed To Load Image" />
+                </div>
+                <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-warning doc docExpand">
+                <iframe src="docs/sys.pdf" width="100%" height="100%"></iframe>
+                </div> -->
+            </div>
+        </div>
+    <!-- </div> -->
+    <input type="text" placeholder=" Enter Message"><input type="submit" value="Send" class="btn btn-primary">
+    </div>
+
+    <!-- main section for conference ends     -->
+
+    <script>
+        $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+
+
+<!-- <video id="video" width="640" height="480" autoplay></video> -->
+<!-- <div id="drop-area"> -->
+<!-- <p>Drag & Drop IMG/PNG/PDF Here</p>
+<label id="button" for="fileElem">Select some files</label>
+<input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
+</div> -->
+<!-- <div id="gallery"></div> -->
+{% endblock %}
+
+{% block postscript %}
+<link rel="stylesheet" href="{% static 'LiveStreamApp/css/host.css' %}">
+<script src='{% static "LiveStreamApp/jss/host.js"%}'></script>
+{% endblock %}

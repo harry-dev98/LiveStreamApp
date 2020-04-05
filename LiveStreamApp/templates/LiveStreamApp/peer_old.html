@@ -1,0 +1,130 @@
+{% extends 'LiveStreamApp/base.html' %}
+{% load static %}
+
+{% block prescript %}
+    <script>
+        let webCamSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/peer/'
+        );
+        var sess = '{{sess}}';
+        webCamSocket.onopen = function(e){
+            console.log("Socket is connected");
+            }
+    </script>
+    
+    <script src='{% static "LiveStreamApp/jss/adapter.js"%}'></script>
+        
+{% endblock %}
+
+{% block content %}
+<p style="opacity: 0;" id="live" class="glow"> <b><mark id="mark"><b><font color="white">Live!</font></b></mark> </p>
+<marquee id="marquee" behavior="scroll" direction="righ"><b>WebStreaming App by Dr. Holmes Academy, Jeeda</b></marquee>
+<div class="container-fluid main">
+    <div id="vdoside" class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 dragside">
+     
+        <div class="col-md-12 col-sm-12 col-xl-12 videoChat vdo">
+            <video autoplay id="video" class="vdo" width="100%" controls>
+                Your browser does not support the video.
+            </video>
+            <!-- <center><button class="col-md-6 btn btn-primary">Button 1</button>
+                <button class="col-md-6 btn btn-warning">Button 2</button></center> -->
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 chatside" id="chatside">
+        <!-- This msgBox div will be looped while printing dynamic masseges -->
+        <div id="chat" class="col-md-12 col-sm-12 col-xs-12 col-lg-12 chatting">
+            <center><b><p style="color: azure;"> <br> Space to View Share Documents <br> <br> Or Start Discussion <br></p></b></center>
+            <!-- <div class="col-md-12 msgBox"> -->
+            <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-success msg1">Hello Student</div>
+            <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-warning msg2">hello Teahcer</div> -->
+        <!-- this is image and pdf box -->
+            <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 doc docExpand">
+                <img src="" width="100%" height="100%" alt="Failed To Load Image" />
+            </div>
+            <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 doc docExpand">
+                <iframe src="" width="100%" height="100%" class="docExpand"></iframe>
+            </div> -->
+        </div>
+    </div>
+    <div style="float:right" class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12" >
+        <div  class="input-group">
+            <input id="input" type="hidden" class="form-control" placeholder=" Enter Massege..">
+            <div class="input-group-btn">
+                <button id="btnhover" class="send btn btn-default" type="submit">
+                    <i class="glyphicon glyphicon-send"></i>
+                </button>
+            </div>
+        </div> 
+    </div>
+</div>
+
+
+<!-- main section for conference ends     -->
+<!-- <video id="video" width="640" height="480" autoplay></video>
+<div id="gallery"></div> -->
+{% endblock %}
+
+{% block postscript %}
+<script>
+    let btn = document.getElementById('btnhover');
+    let ip = document.getElementById('input');
+    ip.onfocus = (event)=>{
+        ip.setAttribute('type','text');
+    }
+    ip.onfocusout = (event)=>{
+        ip.setAttribute('type','hidden');
+    }
+    btn.onmouseover = (event)=>{
+        ip.setAttribute('type', 'text');
+        setTimeout(()=>{
+            
+            if(ip.nodeName != document.activeElement.nodeName){
+                ip.setAttribute('type', 'hidden');
+            }
+        }, 1000);
+
+    }
+</script>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    function docExpand() {
+        console.log("docexpandinggg");
+        $('.msgType').removeClass('resizeInput');
+        $('.dragside').removeClass('col-md-8');
+        $('.dragside').removeClass('col-xl-8');
+        $('.dragside').removeClass('col-lg-8');
+        $('.dragside').addClass('col-md-4');
+        $('.dragside').addClass('col-xl-4');
+        $('.dragside').addClass('col-lg-4');
+        $('.chatside').removeClass('col-md-4');
+        $('.chatside').removeClass('col-xl-4');
+        $('.chatside').removeClass('col-lg-4');
+        $('.chatside').addClass('col-md-8');
+        $('.chatside').addClass('col-xl-8');
+        $('.chatside').addClass('col-lg-8');
+    };
+    function vdoExpand() {
+        console.log("docexpandinggg vdooox");
+        $('.msgType').addClass('resizeInput');
+
+        $('.dragside').removeClass('col-md-4');
+        $('.dragside').removeClass('col-xl-4');
+        $('.dragside').removeClass('col-lg-4');
+        $('.dragside').addClass('col-md-8');
+        $('.dragside').addClass('col-xl-8');
+        $('.dragside').addClass('col-lg-8');
+        $('.chatside').removeClass('col-md-8');
+        $('.chatside').removeClass('col-xl-8');
+        $('.chatside').removeClass('col-lg-8');
+        $('.chatside').addClass('col-md-4');
+        $('.chatside').addClass('col-xl-4');
+        $('.chatside').addClass('col-lg-4');
+    };
+
+    // vdo = document.getElementById('video');
+    // console.log(vdo);
+    // vdo.addEventListener('mouseover',vdoExpand);
+    
+</script>
+<script src='{% static "LiveStreamApp/jss/peer.js"%}'></script>
+{% endblock %}

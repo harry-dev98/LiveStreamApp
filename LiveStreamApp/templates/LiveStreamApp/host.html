@@ -1,7 +1,18 @@
-{% extends 'LiveStreamApp/base.html' %}
-{% load static %}
-
-{% block prescript %}
+﻿{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <!-- <link rel="apple-touch-icon" href="{%static 'LiveStreamApp/images/apple-touch-icon.png'"%} /> -->
+    <!-- <link rel="apple-touch-startup-image" href="{%static 'LiveStreamApp/images/apple-touch-startup-image-320x460.png'%}" /> -->
+    <title>Zedd Conference</title>
+    <link rel="stylesheet" href="{%static 'LiveStreamApp/css/framework7.css'%}">
+    <link rel="stylesheet" href="{%static 'LiveStreamApp/css/style.css'%}">
+    <link type="text/css" rel="stylesheet" href="{%static 'LiveStreamApp/css/swipebox.css'%}" />
+    <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,700,900' rel='stylesheet' type='text/css'>
     <script>
         let webCamSocket = new WebSocket(
             'ws://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/host/'
@@ -13,122 +24,143 @@
         
     </script>
     <script src='{% static "LiveStreamApp/jss/adapter.js"%}'></script>
-    <style>
-        ::-webkit-scrollbar{
-            background: #1b1b1b;
 
-        }
-        ::-webkit-scrollbar-thumb{
-            background: #E1E1E1;
-        }
-        
-        body{
-            background: #1b1b1b;
-        }
-        .main{
-            height:100% !important;
-        }
-        .dragside{
-            height:600px !important;
-            overflow: scroll;
-        }
-        .chatside{
-            background: black !important;
-            height:600px !important;
-            overflow: scroll;
-        }
-        .footer{
-            color:white;
-            width:100%;
-            height:50px;
-            text-align: center;
-            background: black;
-            margin-top:100px;
-        }
-        .chatting{
-            height:100%;
-        }
-        .img,.pdf{
-            height:400px;
-        }
-        .videoChat{
-            height:50%;
-        }
-        .send{
-            height:50px;
-            background: blueviolet;
-            color:white;
-            font-size:30px;
-        }
-        .drag_Drop{
-            padding:4px;
-            height:30%;
-        }
-    </style>
-{% endblock %}
-
-
-{% block content %}
-<p style="opacity: 0;" id="live" class="glow"> <b><mark id="mark"><b><font color="white">Live!</font></b></mark> </p>
-<marquee id="marquee" behavior="scroll" direction="righ"><b>WebStreaming App by Dr. Holmes Academy, Jeeda</b></marquee>
-<!-- Main Section for conference -->    
-    <div class="container-fluid main">
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12 chatside"><br>
-           <div id="peerstatus" class="well"><b>Active 0</b></div> 
-            <div class="col-md-12 col-sm-12 col-xl-12 drag_Drop">
-                <div  id="drop-area" data-toggle="tooltip" data-placement="top" title="Drag And Drop Files Here !" class="jumbotron dragDropInner">
-                    <p>Drag & Drop IMG/PNG/PDF Here</p>
-                    <label id="button" for="fileElem">Select some files</label>
-                    <input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
-                </div>
-            </div>
-            <div class="col-md-12 col-sm-12 col-xl-12 videoChat">
-                <video id="video" class="vdo" width="100%" controls>
-                    <!-- <source src="pathToVideo" type="video/mp4"> -->
-                        Your browser does not support the video.
-                </video>
-                <center><button style="display: none;" id="btn_stream" class="col-md-6 btn btn-primary">Stop</button>
-                    <button id="btn_live" class="col-md-6 btn btn-warning">Get Live</button></center>
-            </div>
+</head>
+<body id="mobile_wrap">
+    <div class="statusbar-overlay"></div>
+    <div class="panel-overlay"></div>
+    <div class="panel panel-left panel-cover">
+        <nav class="list-nav">
+            <ul>
+                <!-- <li class="tools-icon"><a href="Peer.html">Peer</a></li>
+                <li class="lock-icon"><a href="host.html">Host</a></li> -->
+            </ul>
+        </nav>
+    </div>
+    <div class="panel panel-right panel-cover">
+        <div class="user_login_info">
+            <h2>Hi, username</h2>
+            <p>Edit your account settings</p>
+            <nav class="list-nav-small">
+                <ul>
+                    <!-- <li class="about-icon"><a href="index.html">Home</a></li>
+                    <li class="tools-icon"><a href="Peer.html" >Peer</a></li>
+                    <li class="lock-icon"><a href="host.html" >Host</a></li> -->
+                </ul>
+            </nav>
         </div>
-
-        <div id="chatside" class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12 chatside">
-            <!-- This msgBox div will be looped while printing dynamic masseges -->
-            <div id="chat" class="col-md-12 col-sm-12 col-xs-12 col-lg-12 chatting">
-                <!-- <div id="msgContainer" class="col-md-12 msgBox"> -->
-                <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-success msg1">Hello Students</div> -->
-                <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-warning msg2">hello Teacher</div> --> -->
-                <!-- <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-success doc docExpand">
-                    <img src="images/download.jpg" width="100%" height="100%" alt="Failed To Load Image" />
-                </div>
-                <div class="col-md-7 col-xs-7 col-sm-7 col-lg-7 alert-warning doc docExpand">
-                <iframe src="docs/sys.pdf" width="100%" height="100%"></iframe>
-                </div> -->
-            </div>
-        </div>
-    <!-- </div> -->
-    <input type="text" placeholder=" Enter Message"><input type="submit" value="Send" class="btn btn-primary">
     </div>
 
-    <!-- main section for conference ends     -->
+    <div class="views">
+        <div class="view view-main">
+            <div class="navbar">
+                <div class="navbar-inner">
+                    <div class="left sliding"><div class="logo_title">Zedd Conference</div></div>
+                    <div class="right menu_open_icon"><a href="#" data-panel="left" class="link icon-only open-panel"></a></div>
+                </div>
+            </div>
+            <div class="pages navbar-through toolbar-through">
+                <div data-page="index" class="page homepage">
+                    <div class="page-content">
+                        <!-- Slider -->
+                        <div class="swiper-container swiper-init" data-effect="coverflow" data-pagination=".swiper-pagination" data-paginationclickable="true" data-autoplay="3000">
+                            <div class="swiper-wrapper">
 
-    <script>
-        $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip();
-        });
-    </script>
+                                <div class="swiper-slide">
 
+                                    <span>Dr. Holmes Academy<br />Jeeda</span>
+                                    <span class="subtitle">WebStreaming App </span>
 
-<!-- <video id="video" width="640" height="480" autoplay></video> -->
-<!-- <div id="drop-area"> -->
-<!-- <p>Drag & Drop IMG/PNG/PDF Here</p>
-<label id="button" for="fileElem">Select some files</label>
-<input type="file" id="fileElem" multiple accept="image/*" onchange="handleFiles(this.files)">
-</div> -->
-<!-- <div id="gallery"></div> -->
-{% endblock %}
+                                    <!--<a href="about.html" class="swiper_read_more">swipe to see more</a>-->
+                                </div>
+                                <div class="swiper-slide">
 
-{% block postscript %}
-<link rel="stylesheet" href="{% static 'LiveStreamApp/css/host.css' %}">
-<script src='{% static "LiveStreamApp/jss/host.js"%}'></script>
-{% endblock %}
+                                    <span>Dr. Holmes Academy<br />Jeeda</span>
+                                    <span class="subtitle">WebStreaming App </span>
+
+                                    <!--<a href="about.html" class="swiper_read_more">swipe to see more</a>-->
+                                </div>
+                                <div class="swiper-slide">
+
+                                    <span>Dr. Holmes Academy<br />Jeeda</span>
+                                    <span class="subtitle">WebStreaming App </span>
+
+                                    <!--<a href="about.html" class="swiper_read_more">swipe to see more</a>-->
+                                </div>
+                            </div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Bottom Toolbar-->
+            <div class="toolbar">
+                <div class="toolbar-inner">
+                    <ul class="toolbar_icons icons_4row">
+                        <li><a href=""><img src="{%static 'LiveStreamApp/images/icons/white/home.png'%}" alt="" title="" /></a></li>
+                        <li><a href="#" data-popup=".popup-social" class="open-popup"><img src="{%static 'LiveStreamApp/images/icons/white/heart.png'%}" alt="" title="" /></a></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Services Popup -->
+    <div class="popup popup-social">
+        <p style="opacity: 0;" id="live" class="glow"> <b><mark id="mark"><b><font color="white">Live!</font></b></mark> </p>
+        <div class="content-block">
+            <h4>Dr. Holmes Academy<br /> Jeeda</h4>
+            <input id="btn_live" type="submit" name="submit" style="padding: 10px;margin: 0px;" class="form_submit btn-block" id="submit" value="Live Now!" />
+            <ul class="features_list">
+                <li>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <img src="{%static 'LiveStreamApp/images/icons/turquoise/user.png' %}" style="height: 10px;" alt="" title="" /><span><p id="peerstatus">Active User 0</p></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="pull-right" style="font-size:16px;text-align:right;padding:10px;box-sizing: border-box ;">IMG/PNG/PDF<br />
+                                <input id="drop-area" type="file" class="close_popup_button pull-right" /></p>
+                        </div>
+                    </div>
+               
+                </li>
+                
+                <!-- <li><iframe id="video" width="100%" height="215" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></li> -->
+                <li><video id="video" width="100%" height="215"  autoplay controls></video></li>
+                <li id="chatBox" style="height:240px;overflow-y:scroll"></li>
+                <li>
+                    <div class="contactform">
+                        <div class="cmxform">
+                            <div class="row">
+                                <div class="col-sm-10">
+                                  <input id="txt" type="text" style="width:400px;height:40px !important">
+                                </div>
+                                <div class="col-sm-2">
+                                    <input type="submit" name="submit" style="padding: 10px;margin: 0px;" class="form_submit btn-block" id="submit" value="Send" />
+                                </div>
+                            </div>            
+                
+                            
+                        </div>
+                    </div>
+                </li>
+                
+                <li><button id="close" class="close-popup">Close</button></li>
+            </ul>
+            
+            
+        </div>
+    </div>
+
+    <script type="text/javascript" src="{%static 'LiveStreamApp/jss/jquery-1.10.1.min.js'%}"></script>
+    <script src="{%static 'LiveStreamApp/jss/jquery.validate.min.js'%}" type="text/javascript"></script>
+    <script type="text/javascript" src="{%static 'LiveStreamApp/jss/framework7.js'%}"></script>
+    <script type="text/javascript" src="{%static 'LiveStreamApp/jss/my-app.js'%}"></script>
+    <script type="text/javascript" src="{%static 'LiveStreamApp/jss/jquery.swipebox.js'%}"></script>
+    <script type="text/javascript" src="{%static 'LiveStreamApp/jss/jquery.fitvids.js'%}"></script>
+    <script type="text/javascript" src="{%static 'LiveStreamApp/jss/email.js'%}"></script>
+    <script src='{% static "LiveStreamApp/jss/host.js"%}'></script>
+</body>
+
+</html>

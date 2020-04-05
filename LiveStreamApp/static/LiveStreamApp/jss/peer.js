@@ -13,8 +13,23 @@ var remoteStream;
 var isLive = false;
 
 var video = document.getElementById('video');
-var msgBox = document.getElementById('chat');
+var msgBox = document.getElementById('chatBox');
 var liveTag = document.getElementById('live');
+let sendmsg = document.getElementById("submit");
+let txt = document.getElementById("txt");
+
+sendmsg.onclick = (e)=>{
+    let m = txt.value;
+    txt.value="";
+    DataChannel.send(JSON.stringify({
+            "message" : true,
+            "text" : m
+        }));
+    let M = document.createElement('p');
+    M.innerText = "Student : "+m;
+    msgBox.appendChild(M);
+}
+
 
 const configuration = {
     'iceServers' : [{
@@ -50,44 +65,31 @@ localPeerConn.ontrack = (event)=>{
 };
 
 function addImg(objURL){
-    let div = document.createElement("div");
-    div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc docExpand";
     let img = document.createElement('img');
-    img.src = objURL;
+    img.src =objURL;
     img.alt="Failed To Load Image";
-    img.setAttribute('height', '100%');
+    // img.setAttribute('id' , 'docExpand');
     img.setAttribute('width', '100%');
-    img.setAttribute('class', 'docExpand');
-    img.setAttribute('id', 'doc');
-    div.appendChild(img);
-    div.addEventListener('onmouseover',(event)=>{
-        let vr = document.getElementById('vdoside');
-        let vr_ = document.getElementById('chatside');
-        let w = vr.width + vr_.width;
-        vr.width = 0.25*w;
-        vr_.width = 0.75*w;
-    });
-    msgBox.appendChild(div);
+    img.setAttribute('height', '100%');
+    // img.height = "100%";
+    // img.width = "100%";
+    msgBox.appendChild(img);
+    // msgBox.appendChild(div);
 }
 
 function addpdf(objURL){
-    let div = document.createElement("div");
-    div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc docExpand";
+        // let div = document.createElement("div");
+    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
     var ifrm = document.createElement('iframe');
-    ifrm.setAttribute('id', 'doc'); // assign an id
-    ifrm.src = objURL;
-    ifrm.setAttribute('class', 'docExpand');
+    // ifrm.setAttribute('id', "docExpand");
+    // ifrm.setAttribute('height', '100%');
+    // ifrm.setAttribute('width', '100%'); // assign an id
     ifrm.height = "100%";
     ifrm.width = "100%";
-    div.appendChild(ifrm);
-    div.addEventListener('onmouseover',(event)=>{
-        let vr = document.getElementById('vdoside');
-        let vr_ = document.getElementById('chatside');
-        let w = vr.width + vr_.width;
-        vr.width = 0.25*w;
-        vr_.width = 0.75*w;
-    });
-    msgBox.appendChild(div);
+    ifrm.src = objURL;
+    msgBox.appendChild(ifrm);
+    // msgBox.appendChild(div);
+
 }
 
 let fname;
@@ -123,10 +125,17 @@ localPeerConn.ondatachannel = (event)=>{
         }
         else{
             let data = JSON.parse(event.data);
-            fname = data.file;
-            size = data.size;
-            type = data.type;
-            recievedBlob = new Blob([], {'type':type});
+            if( data.message==true){
+                let M = document.createElement('p');
+                M.innerText = "Teacher : "+data.text;
+                msgBox.appendChild(M);
+            }
+            else{
+                fname = data.file;
+                size = data.size;
+                type = data.type;
+                recievedBlob = new Blob([], {'type':type});
+            }
         }
     }
 };
