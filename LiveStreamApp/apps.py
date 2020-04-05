@@ -12,3 +12,4 @@ class Var():
     offerICE = []
     answerICE = []
     users = dict()
+    count = 0

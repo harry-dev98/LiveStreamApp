@@ -6,7 +6,7 @@
         let webCamSocket = new WebSocket(
             'ws://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/peer/'
         );
-        
+        var sess = '{{sess}}';
         webCamSocket.onopen = function(e){
             console.log("Socket is connected");
             }

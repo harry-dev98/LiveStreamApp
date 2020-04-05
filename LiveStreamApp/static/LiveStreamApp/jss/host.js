@@ -19,6 +19,7 @@ let remoteDesc;
 let mediaRecorder;
 let recordedBlobs;
 let isLive=false;
+let isStreaming=false;
 
 var video = document.getElementById('video');
 let dropArea = document.getElementById('drop-area');
@@ -33,25 +34,42 @@ let fileCount = 0;
 let files;
 
 btn_live.onclick = (e)=>{
+    console.log("livenow");
     liveTag.style.opacity = 1;
-    isLive = true;
-    for(const [u, U] of Object.entries(Users)){
-        let Conn = U.conn;
-        localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
+    if(!isLive){
+        isLive = true;
+        for(const [u, U] of Object.entries(Users)){
+            let Conn = U.conn;
+            localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
+            offer(Conn, u);
+        }
     }
     video.play();
-    btn_live.remove();
+    btn_live.style.display="none";
+    btn_stream.style.display="block";
+    // btn_stream.innerHTML="Stop";
 }
 
 video.onpause = (e)=>{
-    if(isLive)stopStreaming();
+    console.log(isLive, isStreaming);
+    if(isStreaming && isLive){
+        stopStreaming();
+        liveTag.style.opacity=0;
+        isStreaming=false;
+    }
     console.log("pauseddd")
-    btn_stream.innerHTML = "Start";
+    btn_stream.style.display = "none";
+    btn_live.style.display = "block";
 }
 video.onplay=(e)=>{
-    // if(isLive)startStreaming();
+    console.log(isLive, isStreaming);
+    if(!isStreaming && isLive){
+        startStreaming();
+        isStreaming=true;
+        liveTag.style.opacity=1;
+    }
     console.log("plahying videosss");
-    btn_stream.innerHTML = "Stop";
+    // btn_stream.innerHTML = "Stop";
 }
 btn_stream.onclick = event=>{
     if(btn_stream.innerHTML == "Stop"){
@@ -198,8 +216,8 @@ function getStream(){
             return stream;
         })
         .then(()=>{
-            console.log("started recording..")
-            startRecording();
+            // console.log("started recording..")
+            // startRecording();
         })
         .catch(err=>{
             console.log("error while accesing media", err);
@@ -208,7 +226,6 @@ function getStream(){
 }
 getStream();
 function stopStreaming(){
-    liveTag.style.opacity=0;
     for (const [user, U] of Object.entries(Users)){
         let senders = U.conn.getSenders();
         console.log("stopppingg streaminggg", senders);
@@ -219,7 +236,6 @@ function stopStreaming(){
     };
 }
 function startStreaming(){
-    liveTag.style.opacity=1;
     console.log("Starting streamingg")
     for (const [user, U] of Object.entries(Users)){
         let Conn = U.conn;
@@ -287,7 +303,7 @@ let offer = async (Conn, user)=>{
         return Conn.localDescription;
     })
     .then(async (desc)=>{
-        console.log("sending offer...");
+        console.log("sending offer... host is live == ", isLive);
         await webCamSocket.send(JSON.stringify({
             "offer" : desc,
             "for" : user,
@@ -303,7 +319,7 @@ let offer = async (Conn, user)=>{
 webCamSocket.onclose = (event)=>{
     setTimeout(()=>{
         let webCamSocket = new WebSocket(
-            'wss://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/host/'
+            'wss://' + window.location.host + '/ws/rooms/'+sess+'/host/'
         );
         
         webCamSocket.onopen = function(e){
@@ -314,7 +330,6 @@ webCamSocket.onclose = (event)=>{
 webCamSocket.onmessage = (event)=>{
     let data = JSON.parse(event.data);
     console.log("websocket recieved a message..",data.recv);
-    console.log(data.message);
     console.log(data.message);
     if(data.recv == "answer"){
         console.log("recieved a answer..");
@@ -418,12 +433,11 @@ webCamSocket.onmessage = (event)=>{
             }
             Chann.onnegotiationneeded = (e)=>{
                 console.log("connection negotiated...");
-                // offer(Conn, user);
             }
             if(isLive==true){
                 localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
+                offer(Conn, user);
             }
-            offer(Conn, user);
         });
     }
 }

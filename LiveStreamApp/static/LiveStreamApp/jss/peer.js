@@ -1,4 +1,5 @@
 "use strict"
+console.log(sess);
 
 var offerConstraints = {
     offerToReceiveVideo : 1,
@@ -9,6 +10,7 @@ var userId;
 var User;
 var isPeer = true;
 var remoteStream;
+var isLive = false;
 
 var video = document.getElementById('video');
 var msgBox = document.getElementById('chat');
@@ -40,9 +42,7 @@ localPeerConn.oniceconnectionstatechange = (event)=>{
     console.log("handling the connection change...");
     // console.log(event);
 }
-localPeerConn.onaddtrack = (event){
 
-}
 localPeerConn.ontrack = (event)=>{
     console.log("recieved mediaa.. from host");
     video.srcObject = event.streams[0];
@@ -132,19 +132,20 @@ localPeerConn.ondatachannel = (event)=>{
 };
 
 webCamSocket.onclose = (event)=>{
-    let webCamSocket = new WebSocket(
-        'wss://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/peer/'
-    );
+    setTimeout(()=>{
+            webCamSocket = new WebSocket('wss://' + window.location.host + '/ws/rooms/'+sess+'/peer/');
+        }, 2000);
+    }
     
-    webCamSocket.onopen = function(e){
-        console.log("Socket is connected");
-        }
+webCamSocket.onopen = function(e){
+    console.log("Socket is connected");
 }
 
 webCamSocket.onmessage = async (event)=>{
     let data = JSON.parse(event.data);
     console.log("websocket recieved a message.. ", data.recv);
     console.log(data.message);
+    console.log(data.isLive);
     if(data.recv == "offer"){
         console.log("recieved a offer..");
         if(data.isLive==true){
@@ -189,7 +190,8 @@ webCamSocket.onmessage = async (event)=>{
     }
     else if(data.recv == "iceCand"){
         try{
-            console.log("adding candidates..");
+            console.log("adding candidates..", data.candidate);
+
             localPeerConn.addIceCandidate(data["candidate"]);
         }
         catch(err){
