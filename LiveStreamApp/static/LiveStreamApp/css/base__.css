@@ -1,0 +1,102 @@
+*{
+    margin: 0;
+    padding:0px;
+
+}
+body{
+    height:100%;
+    display: block;
+}
+.main{
+    height:1000px !important;
+   
+}
+.chatside,.dragside{
+    margin:auto;
+    background:lightgray;   
+    display:inline-block;
+    height:1000px;
+    
+}
+.chatside:nth-child(2){
+    background: #EEEEEE;
+    overflow: scroll;
+    height:950px;
+}
+.drag_Drop{
+    padding:20px;
+    height:20%;
+    display: block;
+}
+.dragDropInner{
+    text-align: center !important;
+    background:transparent;
+    border: 5px dashed #EEEEEE;
+    height: 100%;
+}
+.videoChat{
+    margin-top:100px;
+    height:50%;
+    /* background: #EEEEEE; */
+    display: block;
+}
+.videoChat video{
+    height: 90%;
+}
+.msg1{
+    margin-top:5px;
+    margin-bottom:5px;
+    float:left;
+    padding:10px;
+    border-radius:5px;
+    box-sizing: border-box;
+    /* box-shadow: 5px 5px 10px 4px lightgray; */
+}
+.msg2{
+    float:right;
+    margin-top:5px;
+    margin-bottom:5px;
+    padding:10px;
+    border-radius:5px;
+    box-sizing: border-box;
+    
+}
+.doc{
+	float:center;
+    margin-top:5px;
+    margin-bottom:5px;
+    margin-left:20px;
+    width:97%;
+    height:900px;
+    border-radius:5px;
+    padding:20px;
+    box-sizing: border-box;
+    /* box-shadow: 5px 5px 10px 4px lightgray; */
+}
+
+.docExpand{
+    margin-top:10px;
+    margin-bottom:10px;
+    padding:20px;
+}
+
+.bg-4 { 
+    height:85px;
+    background: #2f2f2f;
+    padding-top: 30px;
+    color: #fff;
+}
+input[type="text"]{
+    width:58%;
+    border:1px solid grey;
+    height: 50px;
+}
+input[type="submit"]{
+    width:8.5%;
+    
+    height:50px;
+}
+.resizeInput{
+    width:24% !important;
+    height:50px !important;
+}
