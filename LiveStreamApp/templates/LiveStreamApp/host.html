@@ -15,7 +15,7 @@
     
     <script>
         let webCamSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/host/'
+            'wss://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/host/'
         );
         var sess = '{{sess}}';
         webCamSocket.onopen = function(e){
