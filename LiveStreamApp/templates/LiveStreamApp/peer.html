@@ -14,7 +14,7 @@
     <link type="text/css" rel="stylesheet" href="{%static 'LiveStreamApp/css/swipebox.css'%}" />
     <script>
         let webCamSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/peer/'
+            'wss://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/peer/'
         );
         var sess = '{{sess}}';
         webCamSocket.onopen = function(e){
