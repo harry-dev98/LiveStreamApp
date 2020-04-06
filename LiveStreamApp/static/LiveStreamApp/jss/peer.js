@@ -65,6 +65,7 @@ localPeerConn.ontrack = (event)=>{
 };
 
 function addImg(objURL){
+    console.log("adddingg img..to ", msgBox);
     let img = document.createElement('img');
     img.src =objURL;
     img.alt="Failed To Load Image";
@@ -101,7 +102,7 @@ let recievedBlob;
 let DataChannel = localPeerConn.createDataChannel(User+"_datachann");
 localPeerConn.ondatachannel = (event)=>{
     var recvChann = event.channel;
-    console.log("ondatachannel..", event);
+    console.log("ondatachannel..");
     recvChann.onmessage = (event)=>{
         console.log("recieved...", event);
         if(event.data instanceof Blob){

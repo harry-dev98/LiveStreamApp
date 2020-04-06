@@ -15,6 +15,7 @@ class consumer(AsyncConsumer):
     groupName = ""
     sessId = None
     who = ""
+    isActiveHost=False
         
     async def websocket_connect(self, event):
         try:
@@ -30,12 +31,12 @@ class consumer(AsyncConsumer):
                 self.sessId = await database_sync_to_async(Session.objects.get)(pk=self.name)
                 
             except Session.DoesNotExist:
+                print("Disconnectinggg no sessio")
                 await self.send({
-                "type" : "websocket.close"
+                "type" : "websocket.disconnect"
                 })
                 raise StopConsumer
-                return
-
+                
             # Var.users[self.User] = Var.count+1
             # print("connection requested", event)
             # try:
@@ -46,13 +47,15 @@ class consumer(AsyncConsumer):
                         "type" : "websocket.send",
                         "message" : "There is one active Host for this Session Id, You are not allowed"
                     })
+                    print("Disconnectinggg not valid host")
                     self.send({
-                        "type" : "websocket.close",
+                        "type" : "websocket.disconnect",
                     })
                     return
                 print("is a valid host")
                 
                 self.sessId.isActive = True
+                self.isActiveHost = True
                 self.sessId.save()
                 await self.channel_layer.group_send(
                         self.name+"_peer",
@@ -84,8 +87,9 @@ class consumer(AsyncConsumer):
                         "type" : "websocket.send",
                         "message": "Session is Not Live/Expired"
                     })
+                    print("Disconnectinggg session not live")
                     self.send({
-                        "type" : "websocket.close"
+                        "type" : "websocket.disconnect"
                     })
                     return
             
@@ -109,7 +113,7 @@ class consumer(AsyncConsumer):
             )
         except Exception:
             print("exception occured,,..")
-            if self.sessId and self.who == "host":
+            if self.sessId and self.isActiveHost == True:
                 if self.sessId.isActive == True:
                     self.sessId.isActive = False
                     self.sessId.save()
@@ -178,7 +182,7 @@ class consumer(AsyncConsumer):
                 pass
         except Exception:
             print("exception occured,,..")
-            if self.sessId and self.who == "host":
+            if self.sessId and self.isActiveHost == True:
                 if self.sessId.isActive == True:
                     self.sessId.isActive = False
                     self.sessId.save()
@@ -207,7 +211,7 @@ class consumer(AsyncConsumer):
             raise StopConsumer
         except Exception:
             print("exception occured,,..")
-            if self.sessId and self.who == "host":
+            if self.sessId and self.isActiveHost == True:
                 if self.sessId.isActive == True:
                     self.sessId.isActive = False
                     self.sessId.save()
@@ -286,7 +290,7 @@ class consumer(AsyncConsumer):
                     })
         except Exception:
             print("exception occured,,..")
-            if self.sessId and self.who == "host":
+            if self.sessId and self.isActiveHost == True:
                 if self.sessId.isActive == True:
                     self.sessId.isActive = False
                     self.sessId.save()

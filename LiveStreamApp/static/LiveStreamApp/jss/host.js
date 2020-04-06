@@ -12,6 +12,7 @@ var offerConstraints = {
     offerToReceiveVideo : 1
 };
 let Users = [];
+// let User_onwait=[];
 let user;
 let userCnt=0;
 let localStream;
@@ -56,18 +57,13 @@ sendmsg.onclick = (e)=>{
 }
 
 btn_live.onclick = (e)=>{
+    if(!isLive){
+        isLive=true;
+    }
     console.log("livenow");
     liveTag.style.opacity = 1;
-    if(!isLive){
-        isLive = true;
-        for(const [u, U] of Object.entries(Users)){
-            let Conn = U.conn;
-            localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
-            offer(Conn, u);
-        }
-    }
-    video.play();
     btn_live.style.display="none";
+    video.play();
     // btn_stream.style.display="block";
     // btn_stream.innerHTML="Stop";
 }
@@ -75,23 +71,25 @@ btn_live.onclick = (e)=>{
 video.onpause = (e)=>{
     console.log(isLive, isStreaming);
     if(isStreaming && isLive){
+    // if(isLive){
         stopStreaming();
         liveTag.style.opacity=0;
         isStreaming=false;
+        btn_live.style.display = "block";
     }
     console.log("pauseddd")
     // btn_stream.style.display = "none";
-    btn_live.style.display = "block";
 }
 video.onplay=(e)=>{
     console.log(isLive, isStreaming);
     if(!isStreaming && isLive){
+    // if(isLive &&){
         startStreaming();
         isStreaming=true;
         liveTag.style.opacity=1;
+        btn_live.style.display = "none";
     }
     console.log("plahying videosss");
-    // btn_stream.innerHTML = "Stop";
 }
 // btn_stream.onclick = event=>{
 //     if(btn_stream.innerHTML == "Stop"){
@@ -188,7 +186,7 @@ async function send_metaData(DataChann, file){
 }
 async function send_chunks(DataChann, file){
     console.log("sending chunks of "+file.name);
-    let chunk = 8 * 1024 * 1024;
+    let chunk = 8 * 1024  //* 1024;
     let left = file.size;
     let offset=0;
     while(left>0){
@@ -268,7 +266,7 @@ function startStreaming(){
         let Conn = U.conn;
         getStream();
         localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
-            offer(Conn, user);
+        offer(Conn, user);
     }
 }
 function startRecording() {
@@ -399,21 +397,23 @@ webCamSocket.onmessage = (event)=>{
     else if(data.recv == "close_broadcast"){
         console.log("a peer left..");
         delete Users[data.user];
+        peers.innerText = "Active "+(Object.keys(Users).length);
+        // for(const [u, U] of Object.entries(Users)){
+        //     console.log(u,U);
+        // }
     }
     else if(data.recv == "open_broadcast"){
         console.log(data.open_broadcast); 
         user = data.user;
         if(Users[user] === undefined){
-            userCnt ++;
         // console.log(peers.innerText, userCnt);
-            peers.innerText = "Active "+userCnt;
+            Users[user] = {
+                "userId" : data.userId,
+                "conn" : new RTCPeerConnection(configuration)
+            };
+            Users[user]["datachann"] = Users[user]["conn"].createDataChannel(user+"_datachann");
+            peers.innerText = "Active "+(Object.keys(Users).length);
         }
-        Users[user] = {
-            "userId" : data.userId,
-            "conn" : new RTCPeerConnection(configuration)
-        };
-        
-        Users[user]["datachann"] = Users[user]["conn"].createDataChannel(user+"_datachann");
         console.log("created instance of a new user.. conn aswell as data channel")
         new Promise((resolve, reject)=>{
             try{
@@ -439,18 +439,18 @@ webCamSocket.onmessage = (event)=>{
             };
             Conn.oniceconnectionstatechange = (event)=>{
                 console.log("handling the connection change...");
-                if(Conn.iceConnectionState == "close")
-                userCnt++;
-                peers.innerText = "Active "+userCnt;
+                // if(Conn.iceConnectionState == "close" || Conn.iceConnectionState == "disconnected"){
+                    peers.innerText = "Active "+(Object.keys(Users).length);
                 console.log("state of connection is ", Conn.iceConnectionState);
             };
             Conn.onerror = (event)=>{
+                peers.innerText = "Active "+(Object.keys(Users).length);
                 console.log(U.user+" Conn encountered an error "+event);
             };
             Conn.onclose = (event)=>{
-                userCnt--;
-                peers.innerText = "Active "+userCnt;
+                peers.innerText = "Active "+(Object.keys(Users).length);
                 console.log("conn close");
+                delete Users[U.user];
             }
             Chann.onopen = (event)=>{   
                 console.log(U.user+" Channel's ready state is "+ Chann.readyState);
@@ -473,10 +473,13 @@ webCamSocket.onmessage = (event)=>{
                     msgBox.appendChild(M);
             };
         };
-        if(isLive==true){
+        if(isLive==true && isStreaming==true){
             localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
             offer(Conn, user);
         }
+        // else{
+        //     User_onwait[user]=U;
+        // }
     })
     .catch((e)=>{
         console.log("error");
