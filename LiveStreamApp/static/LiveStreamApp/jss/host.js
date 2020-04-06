@@ -64,8 +64,6 @@ btn_live.onclick = (e)=>{
     liveTag.style.opacity = 1;
     btn_live.style.display="none";
     video.play();
-    // btn_stream.style.display="block";
-    // btn_stream.innerHTML="Stop";
 }
 
 video.onpause = (e)=>{
