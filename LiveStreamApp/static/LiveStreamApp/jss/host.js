@@ -16,6 +16,7 @@ let Users = [];
 let user;
 let userCnt=0;
 let localStream;
+let VStream;
 let remoteDesc; 
 let mediaRecorder;
 let recordedBlobs;
@@ -57,9 +58,7 @@ sendmsg.onclick = (e)=>{
 }
 
 btn_live.onclick = (e)=>{
-    if(!isLive){
-        isLive=true;
-    }
+    isLive=true;
     console.log("livenow");
     liveTag.style.opacity = 1;
     btn_live.style.display="none";
@@ -228,14 +227,17 @@ function getStream(){
             echoCancellation: {exact: true}
             },
             video: {
-            width: 1280, height: 720
+            width: 640, height: 360
             }
         })
         .then(stream=>{
             console.log("media devices acquired..");
             localStream = stream;
-            video.srcObject = stream;
-            // video.play();
+            let V = stream.getVideoTracks();
+            VStream = new MediaStream();
+            VStream.addTrack(V[0]);
+            video.srcObject = VStream;
+            video.play();
             return stream;
         })
         .then(()=>{
@@ -259,10 +261,11 @@ function stopStreaming(){
     };
 }
 function startStreaming(){
-    console.log("Starting streamingg")
     for (const [user, U] of Object.entries(Users)){
         let Conn = U.conn;
-        getStream();
+        // getStream();
+        console.log("Starting streamingg for "+user);
+        
         localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
         offer(Conn, user);
     }
@@ -340,9 +343,10 @@ let offer = async (Conn, user)=>{
 
 };
 webCamSocket.onclose = (event)=>{
+    console.log("socket is closeddd");
     setTimeout(()=>{
         let webCamSocket = new WebSocket(
-            'wss://' + window.location.host + '/ws/rooms/'+sess+'/host/'
+            'ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id
         );
         
         webCamSocket.onopen = function(e){

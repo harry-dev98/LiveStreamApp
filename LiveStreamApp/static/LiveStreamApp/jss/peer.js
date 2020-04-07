@@ -61,7 +61,7 @@ localPeerConn.oniceconnectionstatechange = (event)=>{
 localPeerConn.ontrack = (event)=>{
     console.log("recieved mediaa.. from host");
     video.srcObject = event.streams[0];
-    video.play();
+    // video.play();
 };
 
 function addImg(objURL){
@@ -142,8 +142,10 @@ localPeerConn.ondatachannel = (event)=>{
 };
 
 webCamSocket.onclose = (event)=>{
+    console.log("socket is closeddd");
+    
     setTimeout(()=>{
-            webCamSocket = new WebSocket('wss://' + window.location.host + '/ws/rooms/'+sess+'/peer/');
+            webCamSocket = new WebSocket('ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id);
         }, 2000);
     }
     

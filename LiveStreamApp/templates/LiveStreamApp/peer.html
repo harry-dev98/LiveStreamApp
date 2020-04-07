@@ -13,15 +13,27 @@
     <link rel="stylesheet" href="{%static 'LiveStreamApp/css/style.css'%}">
     <link type="text/css" rel="stylesheet" href="{%static 'LiveStreamApp/css/swipebox.css'%}" />
     <script>
-        let webCamSocket = new WebSocket(
-            'wss://' + window.location.host + '/ws/rooms/'+'{{sess}}'+'/peer/'
-        );
         var sess = '{{sess}}';
+        var id = '{{id}}';
+        let webCamSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id
+        );
         webCamSocket.onopen = function(e){
             console.log("Socket is connected");
             }
     </script>
-    
+    <style>
+        .toolbar::before
+        {
+            background-color:transparent !important;
+        }
+        .blink
+        {
+        color: rgb(50, 4, 68) ;
+        padding:10px;box-sizing:border-box;background-color:cadetblue;
+        border-radius:5px;
+        }
+    </style>
     <script src='{% static "LiveStreamApp/jss/adapter.js"%}'></script>
         
 </head>
@@ -55,8 +67,7 @@
             <div class="toolbar">
                 <div class="toolbar-inner">
                     <ul class="toolbar_icons icons_4row">
-                        <li><a href="#"><img src="{% static 'LiveStreamApp/images/icons/white/home.png'%}" alt="" title="" /></a></li> -->
-                        <li><a href="#" data-popup=".popup-login" class="open-popup"><img src="{% static 'LiveStreamApp/images/icons/white/user.png'%}" alt="" title="" /></a></li>
+                        <li><button  data-popup=".popup-login" class="open-popup blink"><b>Attend Class</b></button></li>
                     </ul>
                 </div>
             </div>
