@@ -66,31 +66,21 @@ localPeerConn.ontrack = (event)=>{
 
 function addImg(objURL){
     console.log("adddingg img..to ", msgBox);
-    let img = document.createElement('img');
+    let img = document.createElement('iframe');
     img.src =objURL;
     img.alt="Failed To Load Image";
-    // img.setAttribute('id' , 'docExpand');
     img.setAttribute('width', '100%');
     img.setAttribute('height', '100%');
-    // img.height = "100%";
-    // img.width = "100%";
     msgBox.appendChild(img);
-    // msgBox.appendChild(div);
+
 }
 
 function addpdf(objURL){
-        // let div = document.createElement("div");
-    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
     var ifrm = document.createElement('iframe');
-    // ifrm.setAttribute('id', "docExpand");
-    // ifrm.setAttribute('height', '100%');
-    // ifrm.setAttribute('width', '100%'); // assign an id
-    ifrm.height = "100%";
-    ifrm.width = "100%";
+    ifrm.setAttribute('height', '100%');
+    ifrm.setAttribute('width', '100%'); 
     ifrm.src = objURL;
     msgBox.appendChild(ifrm);
-    // msgBox.appendChild(div);
-
 }
 
 let fname;

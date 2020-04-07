@@ -62,7 +62,13 @@ btn_live.onclick = (e)=>{
     console.log("livenow");
     liveTag.style.opacity = 1;
     btn_live.style.display="none";
-    video.play();
+    if(video.paused){
+        video.play();
+    }
+    else{
+        video.pause();
+        video.play();
+    }
 }
 
 video.onpause = (e)=>{
@@ -86,74 +92,38 @@ video.onplay=(e)=>{
         liveTag.style.opacity=1;
         btn_live.style.display = "none";
     }
+    else{
+        // video.pause();
+    }
     console.log("plahying videosss");
 }
-// btn_stream.onclick = event=>{
-//     if(btn_stream.innerHTML == "Stop"){
-//         video.pause();
-//         if(isLive)stopStreaming();
-//     }
-//     else{
-//         video.play();
-//         if(isLive)startStreaming();
-//     }
-// }
-// ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, (e)=>{
-//         e.preventDefault();
-//         e.stopPropagation();
-//     }, false);
-// });
-// ['dragenter', 'dragover'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, (e)=>{
-//         dropArea.classList.add('highlight');
-//     }, false);
-// });
-// ['dropleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, (e)=>{
-//         dropArea.classList.remove('highlight');
-//         }, false);
-// });
+
 function addImg(file){
-    // let div = document.createElement("div");
-    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
-    let img = document.createElement('img');
+    let img = document.createElement('iframe');
     img.src = file;
     img.alt="Failed To Load Image";
-    // img.setAttribute('id' , 'docExpand');
     img.setAttribute('width', '100%');
     img.setAttribute('height', '100%');
-    // img.height = "100%";
-    // img.width = "100%";
     msgBox.appendChild(img);
-    // msgBox.appendChild(div);
+
 }
 function addpdf(file){
-    // let div = document.createElement("div");
-    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
     var ifrm = document.createElement('iframe');
-    // ifrm.setAttribute('id', "docExpand");
-    // ifrm.setAttribute('height', '100%');
-    // ifrm.setAttribute('width', '100%'); // assign an id
     ifrm.height = "100%";
     ifrm.width = "100%";
     ifrm.src = file;
     msgBox.appendChild(ifrm);
-    // msgBox.appendChild(div);
 }
+
 dropArea.onchange = (e)=>{
-    // let dt = e.dataTransfer;
     console.log(e.target.files);
     files = Array.from(e.target.files);
-    // console.log(dropArea);
     dropArea.value = "";
     if(files.length>1){
         console.log("onefile at a time..");
         return;
     }
-    // fileCount = fileCount + files.length;
-    // dropArea.style.display="none";
-    // setTimeout(async()=>{dropArea.style.display='block';}, 3000);
+
     files.forEach(async (file)=>{   
         let promise = new Promise((resolve, reject)=>{
             if(file) setTimeout(resolve(file), 1000);
@@ -219,6 +189,15 @@ async function preview_send(file){
         })
     };
 }
+
+function _util_extract_video(stream){
+    let V = stream.getVideoTracks();
+    VStream = new MediaStream();
+    VStream.addTrack(V[0]);
+    video.srcObject = VStream;
+    // video.play();
+}   
+
 function getStream(){
     if(navigator.mediaDevices){
         console.log("need permissions to user media devices");
@@ -233,11 +212,7 @@ function getStream(){
         .then(stream=>{
             console.log("media devices acquired..");
             localStream = stream;
-            let V = stream.getVideoTracks();
-            VStream = new MediaStream();
-            VStream.addTrack(V[0]);
-            video.srcObject = VStream;
-            video.play();
+            _util_extract_video(stream);
             return stream;
         })
         .then(()=>{
