@@ -46,11 +46,10 @@ def http404(request, error="error"):
 
 
 def host(request, name, id):
-    print("getting host")
     try:
         peer = Peer.objects.get(id=id)
     except ObjectDoesNotExist:
-        return http404(request, "This is not the right time to use this session, request other link from your teacher. Bye!!")
+        return http404(request, "This is not the right time to use this session, Either Session is Expired or you are too early. Bye!!")
     if peer.who == "Student":
         return http404(request, "This is Only for HOST.. FallBack!! :|")
     return _utils_check_session_time(request, peer, name)
@@ -79,7 +78,10 @@ def hostlogin(request, name):
     return render_to_response('LiveStreamApp/hostlogin.html', {"csrf_token":csrf_token})
 
 def peer(request, name, id):
-    peer = get_object_or_404(Peer, id=id)
+    try:
+        peer = Peer.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return http404(request, "This is not the right time to use this session, request other link from your teacher. Bye!!")
     if peer.who == "Teacher":
         return http404(request, "Sorry Host, This is Only for Students.. Kindly FallBack!! :|")
     return _utils_check_session_time(request, peer, name)
