@@ -7,6 +7,19 @@ from .apps import Var
 
 import datetime
 
+def _utils_is_valid_session(peer, sessId):
+    time_now = datetime.datetime.now()
+    start_time = sess.startTime
+    print(time_now, start_time)
+    end_time = start_time + datetime.timedelta(minutes=sess.interval)
+    # print(time_now.replace(tzinfo=None),start_time.replace(tzinfo=None), end_time.replace(tzinfo=None))
+    if time_now.replace(tzinfo=None) > end_time.replace(tzinfo=None):
+        return False
+    elif time_now.replace(tzinfo=None) < start_time.replace(tzinfo=None):
+        return False
+    else:
+        return True
+
 def _utils_check_session_time(request, peer, sessId):
     print("checking session info")
     sess = peer.sess
@@ -57,8 +70,8 @@ def hostlogin(request, name):
             peer.who = "Teacher"
         except ObjectDoesNotExist():
             raise Http404()
-        print(peer.id)
-        peer.save()
+        if(_utils_is_valid_session(peer, sessId)):
+            peer.save()
         return redirect("host", name = name, id = peer.id)
     return render_to_response('LiveStreamApp/hostlogin.html', {"csrf_token":csrf_token})
 
