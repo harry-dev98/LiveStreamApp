@@ -50,7 +50,7 @@ def host(request, name, id):
     try:
         peer = Peer.objects.get(id=id)
     except ObjectDoesNotExist:
-        return Http404()
+        return http404(request, "This is not the right time to use this session, request other link from your teacher. Bye!!")
     if peer.who == "Student":
         return http404(request, "This is Only for HOST.. FallBack!! :|")
     return _utils_check_session_time(request, peer, name)
@@ -74,7 +74,7 @@ def hostlogin(request, name):
             raise Http404()
         if(_utils_is_valid_session(peer, sessId)):
             peer.save()
-            print("Saving peer")
+
         return redirect("host", name = name, id = peer.id)
     return render_to_response('LiveStreamApp/hostlogin.html', {"csrf_token":csrf_token})
 
