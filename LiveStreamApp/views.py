@@ -8,9 +8,9 @@ from .apps import Var
 import datetime
 
 def _utils_is_valid_session(peer, sessId):
+    sess = peer.sess
     time_now = datetime.datetime.now()
     start_time = sess.startTime
-    print(time_now, start_time)
     end_time = start_time + datetime.timedelta(minutes=sess.interval)
     # print(time_now.replace(tzinfo=None),start_time.replace(tzinfo=None), end_time.replace(tzinfo=None))
     if time_now.replace(tzinfo=None) > end_time.replace(tzinfo=None):
@@ -28,7 +28,6 @@ def _utils_check_session_time(request, peer, sessId):
 
     time_now = datetime.datetime.now()
     start_time = sess.startTime
-    print(time_now, start_time)
     end_time = start_time + datetime.timedelta(minutes=sess.interval)
     # print(time_now.replace(tzinfo=None),start_time.replace(tzinfo=None), end_time.replace(tzinfo=None))
     if time_now.replace(tzinfo=None) > end_time.replace(tzinfo=None):
@@ -48,7 +47,10 @@ def http404(request, error="error"):
 
 def host(request, name, id):
     print("getting host")
-    peer = get_object_or_404(Peer, id=id)
+    try:
+        peer = Peer.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return Http404()
     if peer.who == "Student":
         return http404(request, "This is Only for HOST.. FallBack!! :|")
     return _utils_check_session_time(request, peer, name)
@@ -68,10 +70,11 @@ def hostlogin(request, name):
             peer.name = user
             peer.mob = mob
             peer.who = "Teacher"
-        except ObjectDoesNotExist():
+        except ObjectDoesNotExist:
             raise Http404()
         if(_utils_is_valid_session(peer, sessId)):
             peer.save()
+            print("Saving peer")
         return redirect("host", name = name, id = peer.id)
     return render_to_response('LiveStreamApp/hostlogin.html', {"csrf_token":csrf_token})
 
@@ -103,7 +106,9 @@ def peerlogin(request, name):
             peer.who = "Student"
         except:
             raise Http404
-        peer.save()
+        if(_utils_is_valid_session(peer, sessId)):
+            peer.save()
+            print("Saving peer")
         return redirect("peer", name = name, id = peer.id )
     return render_to_response("LiveStreamApp/peerlogin.html", {"csrf_token":csrf_token})
 
