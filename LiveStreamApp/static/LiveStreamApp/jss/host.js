@@ -20,7 +20,7 @@ let VStream;
 let remoteDesc; 
 let mediaRecorder;
 let recordedBlobs;
-let isLive=false;
+let isLive=true;
 let isStreaming=false;
 
 
@@ -36,6 +36,10 @@ let liveTag = document.getElementById("live");
 let sendmsg = document.getElementById("submit");
 let txt = document.getElementById("txt");
 let close = document.getElementById("close");
+
+window.onload= (e)=>{
+    btn_live.click();
+}
 close.onclick=(e)=>{
     stopStreaming();
     liveTag.style.opacity=0;
@@ -47,16 +51,19 @@ let files;
 
 sendmsg.onclick = (e)=>{
     let m = txt.value;
-    txt.value="";
-    for(const [u, U] of Object.entries(Users)){
-        U.datachann.send(JSON.stringify({
-            "message" : true,
-            "text" : m
-        }))
+    if(m!=""){
+        txt.value="";
+        for(const [u, U] of Object.entries(Users)){
+            U.datachann.send(JSON.stringify({
+                "message" : true,
+                "text" : m,
+                "sender" : name
+            }))
+        }
+        let M = document.createElement('p');
+        M.innerText = name+" : "+m;
+        msgBox.appendChild(M);
     }
-    let M = document.createElement('p');
-    M.innerText = "Teacher : "+m;
-    msgBox.appendChild(M);
 }
 
 btn_live.onclick = (e)=>{
@@ -484,7 +491,7 @@ webCamSocket.onmessage = (event)=>{
                 recvChann.onmessage = (event)=>{
                     let m = JSON.parse(event.data);
                     let M = document.createElement('p');
-                    M.innerText = "Student : "+ m.text;
+                    M.innerText = m.sender+" : "+ m.text;
                     msgBox.appendChild(M);
                 };
             };

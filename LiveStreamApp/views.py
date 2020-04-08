@@ -37,9 +37,9 @@ def _utils_check_session_time(request, peer, sessId):
         return render(request, "LiveStreamApp/error.html", {"error":"Session Yet to Start, Have Patience :)","start_time":start_time})
     else:
         if peer.who == "Teacher":
-            return render(request, "LiveStreamApp/host.html", {"sess":peer.sess.sessId, "id":peer.id})
+            return render(request, "LiveStreamApp/host.html", {"sess":peer.sess.sessId, "id":peer.id, "name" : peer.name})
         else:
-            return render(request, "LiveStreamApp/peer.html", {"sess":peer.sess.sessId, "id":peer.id})
+            return render(request, "LiveStreamApp/peer.html", {"sess":peer.sess.sessId, "id":peer.id, "name":peer.name})
 
 def http404(request, error="error"):
     return render(request, "LiveStreamApp/error.html", {"error" : error})

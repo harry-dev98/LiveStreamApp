@@ -21,16 +21,18 @@ let txt = document.getElementById("txt");
 
 sendmsg.onclick = (e)=>{
     let m = txt.value;
-    txt.value="";
-    DataChannel.send(JSON.stringify({
-            "message" : true,
-            "text" : m
-        }));
-    let M = document.createElement('p');
-    M.innerText = "Student : "+m;
-    msgBox.appendChild(M);
+    if(m!=""){
+        txt.value="";
+        DataChannel.send(JSON.stringify({
+                "message" : true,
+                "text" : m,
+                "sender":name
+            }));
+        let M = document.createElement('p');
+        M.innerText = name+" : "+m;
+        msgBox.appendChild(M);
+    }
 }
-
 
 const configuration = {
     'iceServers' : [{
@@ -105,7 +107,7 @@ localPeerConn.ondatachannel = (event)=>{
             data = JSON.parse(data);
             if( data.message==true){
                 let M = document.createElement('p');
-                M.innerText = "Teacher : "+data.text;
+                M.innerText = data.sender + " : "+data.text;
                 msgBox.appendChild(M);
             }
             else if(data.metaData==true){
@@ -118,9 +120,11 @@ localPeerConn.ondatachannel = (event)=>{
             recievedBytes = recievedBytes + data.byteLength;
             recievedData.push(data);
             if(recievedBytes == size){
-                console.log("recieved complete file.. ", recievedBlob);
                 recievedBlob = new Blob(recievedData,{type:type});
-                var objectURL = URL.createObjectURL(recievedBlob);
+                console.log("recieved complete file.. ", recievedBlob);
+                var FILE = new File([recievedBlob,], fname, {type : type});
+                console.log(FILE);
+                var objectURL = URL.createObjectURL(FILE);
                 var Ext = fname.substring(fname.lastIndexOf('.') + 1).toLowerCase();
                 recievedData = [];
                 recievedBytes = 0;
@@ -151,9 +155,9 @@ webCamSocket.onopen = function(e){
 
 webCamSocket.onmessage = async (event)=>{
     let data = JSON.parse(event.data);
-    console.log("websocket recieved a message.. ", data.recv);
+    // console.log("websocket recieved a message.. ", data.recv);
     console.log(data.message);
-    console.log(data.isLive);
+    // console.log(data.isLive);
     if(data.recv == "offer"){
         console.log("recieved a offer..");
         if(data.isLive==true){
