@@ -11,7 +11,7 @@ class Session(models.Model):
     isActive = models.BooleanField(default=False)
 
     def save(self):
-        self.interval += 15
+        # self.interval += 15
         # self.balance -= (self.interval/60)*COST_PER_HOUR
         super(Session, self).save()
 

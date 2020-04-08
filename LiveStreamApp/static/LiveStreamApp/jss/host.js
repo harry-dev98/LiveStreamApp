@@ -23,6 +23,8 @@ let recordedBlobs;
 let isLive=false;
 let isStreaming=false;
 
+
+
 var video = document.getElementById('video');
 let dropArea = document.getElementById('drop-area');
 // let button = document.getElementById("button");
@@ -117,58 +119,96 @@ function addpdf(file){
 
 dropArea.onchange = (e)=>{
     console.log(e.target.files);
-    files = Array.from(e.target.files);
+    let file = e.target.files[0];
     dropArea.value = "";
-    if(files.length>1){
-        console.log("onefile at a time..");
-        return;
+    async function send_then_preview(file){
+        for (const [user, U] of Object.entries(Users)){
+            console.log("sending to user..", user);
+            let DataChann = U.datachann;
+            let promise_toSend = new Promise(async (resolve, reject)=>{
+                if(file){
+                    console.log("sending metadata");
+                    let bool =await send_metaData(DataChann, file);
+                    console.log("sending metadata");
+                    if(bool){
+                        resolve(DataChann, file);
+                    }
+                    else{
+                        send_then_preview(file);
+                    }
+                } 
+                else reject("no file to send");
+            })
+            
+            await promise_toSend
+            .then(await send_chunks(DataChann, file))
+            .then(await preview(file))
+            .catch((err)=>{
+                console.log(err);
+            });
+        }
     }
+    send_then_preview(file);
+}
 
-    files.forEach(async (file)=>{   
-        let promise = new Promise((resolve, reject)=>{
-            if(file) setTimeout(resolve(file), 1000);
-            else reject("no file to send");
-        })
-        await promise
-        .then(preview_send(file))
-        .catch((err)=>{
-            console.log(err);
-        });
-    });
-};
 async function send_metaData(DataChann, file){
-    console.log("metadata sending of "+file.name);
-    let name = file.name;
-    let size = file.size;
-    let type = file.type;
-    let send_d = JSON.stringify({
-        "file" : name,
-        "size" : size,
-        "type" : type
-    });
-    await DataChann.send(send_d);
+    return new Promise(async(resolve, reject)=>{
+        try{
+            console.log("metadata sending of "+file.name);
+            let name = file.name;
+            let size = file.size;
+            let type = file.type;
+            let send_d = JSON.stringify({
+                "metaData" : true,
+                "file" : name,
+                "size" : size,
+                "type" : type
+            });
+            await DataChann.send(send_d);
+            console.log("metadata sent of "+file.name);
+            resolve("DONE");
+        }
+        catch(e){
+            reject(e);
+        }
+    })
     // await webCamSocket.send(send_d);
-    console.log("metadata sent of "+file.name);
-    return DataChann;
 }
 async function send_chunks(DataChann, file){
     console.log("sending chunks of "+file.name);
     let chunk = 8 * 1024  //* 1024;
     let left = file.size;
-    let offset=0;
-    while(left>0){
-        chunk = (chunk > left) ? left : chunk;
-        var slice = file.slice(offset, offset+chunk);
+    let offset = 0;
+    let slice;
+    let fileReader = new FileReader();
+    fileReader.onerror = (e)=>{
+        console.log("error reading file.. ",e);
+    };
+    fileReader.onabort = (e)=>{
+        console.log("aborted reading a file", e);
+    };
+    fileReader.onload = async (e)=>{
+        // console.log("file chunk Loaded..", e);
+        await DataChann.send(e.target.result);
         // await webCamSocket.send(slice);
-        await DataChann.send(slice);
+        if(left!=0){
+            readChunks();
+        }
+    }
+    async function readChunks(){
+        chunk = (chunk > left) ? left : chunk;
+        slice = file.slice(offset, offset+chunk);
+        // console.log(slice);
+        fileReader.readAsArrayBuffer(slice);
         left -= chunk;
         offset += chunk;
         console.log("sent ",(file.size-left),"/",file.size);
     }
+    await readChunks(0);
     console.log("sent file.. "+ file.name);   
 }
-async function preview_send(file){
-    console.log("file..",file);
+
+function preview(file){
     var objectURL = URL.createObjectURL(file);
     var Ext = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
     console.log("extension of file is "+ Ext);
@@ -179,15 +219,7 @@ async function preview_send(file){
         addpdf(objectURL);
     }
     console.log("added files...");
-    for (const [user, U] of Object.entries(Users)){
-    console.log("user..", user);
-    let DataChann = U.datachann;
-    await send_metaData(DataChann, file)
-    .then(send_chunks(DataChann, file))
-    .catch((err)=>{
-        console.log("error while sending ", err);
-        })
-    };
+    return file;
 }
 
 function _util_extract_video(stream){
@@ -373,11 +405,16 @@ webCamSocket.onmessage = (event)=>{
     }
     else if(data.recv == "close_broadcast"){
         console.log("a peer left..");
-        delete Users[data.user];
-        peers.innerText = "Active "+(Object.keys(Users).length);
-        // for(const [u, U] of Object.entries(Users)){
-        //     console.log(u,U);
-        // }
+        if(Users[data.user]){
+            Users[data.user]["conn"].close();
+            Users[data.user]["datachann"].close();
+            delete Users[data.user];
+            peers.innerText = "Active "+(Object.keys(Users).length);
+        }
+        else{
+            console.log("no such user");
+        }
+
     }
     else if(data.recv == "open_broadcast"){
         console.log(data.open_broadcast); 
@@ -389,6 +426,7 @@ webCamSocket.onmessage = (event)=>{
                 "conn" : new RTCPeerConnection(configuration)
             };
             Users[user]["datachann"] = Users[user]["conn"].createDataChannel(user+"_datachann");
+            Users[user]["datachann"].binarayType = "arraybuffer"
             peers.innerText = "Active "+(Object.keys(Users).length);
         }
         console.log("created instance of a new user.. conn aswell as data channel")
@@ -448,17 +486,15 @@ webCamSocket.onmessage = (event)=>{
                     let M = document.createElement('p');
                     M.innerText = "Student : "+ m.text;
                     msgBox.appendChild(M);
+                };
             };
-        };
-        if(isLive==true && isStreaming==true){
-            localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
-            offer(Conn, user);
-        }
-        // else{
-        //     User_onwait[user]=U;
-        // }
-    })
-    .catch((e)=>{
-        console.log("error");
-    });
-}}
+            if(isLive==true && isStreaming==true){
+                localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
+                offer(Conn, user);
+            }
+        })
+        .catch((e)=>{
+            console.log("error");
+        });
+    }
+}

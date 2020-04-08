@@ -12,6 +12,7 @@ var isPeer = true;
 var remoteStream;
 var isLive = false;
 
+
 var video = document.getElementById('video');
 var msgBox = document.getElementById('chatBox');
 var liveTag = document.getElementById('live');
@@ -64,71 +65,76 @@ localPeerConn.ontrack = (event)=>{
     // video.play();
 };
 
-function addImg(objURL){
-    console.log("adddingg img..to ", msgBox);
-    let img = document.createElement('iframe');
-    img.src =objURL;
-    img.alt="Failed To Load Image";
-    img.setAttribute('width', '100%');
-    img.setAttribute('height', '100%');
-    msgBox.appendChild(img);
-
-}
-
-function addpdf(objURL){
+function addDoc(objURL){
+    var p = document.createElement('a');
     var ifrm = document.createElement('iframe');
     ifrm.setAttribute('height', '100%');
     ifrm.setAttribute('width', '100%'); 
     ifrm.src = objURL;
+    p.innerHTML = "---Tap to Download---"
+    p.style.display = "block";
+    p.style.textAlign = "center";
+    p.href = ifrm.src;
+    p.download = fname;
+    ifrm.onload=(e)=>{
+        p.click();
+        p.remove();
+        URL.revokeObjectURL(ifrm.src);
+
+    }
     msgBox.appendChild(ifrm);
+    msgBox.appendChild(p); 
 }
 
 let fname;
 let size;
 let type;
 let chunk = 8 * 1024 * 1024;
-let recieved=0;
+var recievedBytes = 0;
 let recievedBlob;
+var recievedData = [];
+
 let DataChannel = localPeerConn.createDataChannel(User+"_datachann");
+DataChannel.binaryType = 'arraybuffer';
 localPeerConn.ondatachannel = (event)=>{
     var recvChann = event.channel;
     console.log("ondatachannel..");
     recvChann.onmessage = (event)=>{
-        console.log("recieved...", event);
-        if(event.data instanceof Blob){
-            let data = event.data;
-            recieved += data.size;
-            recievedBlob = new Blob([recievedBlob, event.data], {'type': recievedBlob.type});
-            if(recieved == size){
-                console.log("recieved complete file.. ", recievedBlob);
-                var objectURL = URL.createObjectURL(recievedBlob);
-                var Ext = fname.substring(fname.lastIndexOf('.') + 1).toLowerCase();
-                console.log("extension of file is "+ Ext);
-                if (Ext=="gif"||Ext=="png"||Ext=="bmp"||Ext=="jpeg"||Ext=="jpg"){
-                    addImg(objectURL);
-                }
-                else if(Ext == "pdf"){
-                    addpdf(objectURL);
-                }
-                recievedBlob = new Blob();
-                recieved = 0;
-            }
-        }
-        else{
-            let data = JSON.parse(event.data);
+        let data = event.data;
+        if(typeof data == "string"){
+            data = JSON.parse(data);
             if( data.message==true){
                 let M = document.createElement('p');
                 M.innerText = "Teacher : "+data.text;
                 msgBox.appendChild(M);
             }
-            else{
+            else if(data.metaData==true){
                 fname = data.file;
                 size = data.size;
                 type = data.type;
-                recievedBlob = new Blob([], {'type':type});
             }
         }
-    }
+        else{
+            recievedBytes = recievedBytes + data.byteLength;
+            recievedData.push(data);
+            if(recievedBytes == size){
+                console.log("recieved complete file.. ", recievedBlob);
+                recievedBlob = new Blob(recievedData,{type:type});
+                var objectURL = URL.createObjectURL(recievedBlob);
+                var Ext = fname.substring(fname.lastIndexOf('.') + 1).toLowerCase();
+                recievedData = [];
+                recievedBytes = 0;
+                console.log("extension of file is "+ Ext);
+                addDoc(objectURL);
+                // if (Ext=="gif"||Ext=="png"||Ext=="bmp"||Ext=="jpeg"||Ext=="jpg"){
+                //     addImg(objectURL);
+                // }
+                // else if(Ext == "pdf"){
+                //     addpdf(objectURL);
+                // }
+            }
+        }
+        }
 };
 
 webCamSocket.onclose = (event)=>{

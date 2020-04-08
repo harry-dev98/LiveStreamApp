@@ -55,12 +55,10 @@ def hostlogin(request, name):
             peer.name = user
             peer.mob = mob
             peer.who = "Teacher"
-            peer.save()
-
-
-        except Session.DoesNotExist():
+        except ObjectDoesNotExist():
             raise Http404()
         print(peer.id)
+        peer.save()
         return redirect("host", name = name, id = peer.id)
     return render_to_response('LiveStreamApp/hostlogin.html', {"csrf_token":csrf_token})
 
@@ -90,9 +88,9 @@ def peerlogin(request, name):
             peer.clss = _class
             peer.section = section
             peer.who = "Student"
-            peer.save()
         except:
             raise Http404
+        peer.save()
         return redirect("peer", name = name, id = peer.id )
     return render_to_response("LiveStreamApp/peerlogin.html", {"csrf_token":csrf_token})
 

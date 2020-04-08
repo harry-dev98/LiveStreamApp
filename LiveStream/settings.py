@@ -1,4 +1,5 @@
 import os
+import re
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -57,13 +58,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'LiveStream.wsgi.application'
 ASGI_APPLICATION = 'LiveStream.asgi.application'
 
-CHANNEL_REDIS_HOST = ('127.0.0.1',6379)
+CHANNEL_REDIS_HOST = [('127.0.0.1',6379)]
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [CHANNEL_REDIS_HOST],
+            "hosts": CHANNEL_REDIS_HOST,
             "symmetric_encryption_keys": [SECRET_KEY],
+            "capacity":1000000,
+            "channel_capacity": {
+                "http.request": 2000000,
+                "http.response!*": 100000,
+                re.compile(r"^websocket.send\!.+"): 200000,
+            },
         },
         # 'ROUTING': 'LiveStreamApp.routing.route_patterns',
 
