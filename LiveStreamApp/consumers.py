@@ -8,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 # from .apps import Var
 from .models import Session, Peer
 
+import datetime as dt
 import json
 import pickle
 
@@ -25,6 +26,8 @@ class consumer(AsyncConsumer):
             if self.sessId.isActive == True:
                 self.sessId.isActive = False
                 self.sessId.save()
+        self.peer.logout = dt.datetime.now()
+        self.peer.save()
         raise StopConsumer()
 
     async def websocket_connect(self, event):
@@ -179,6 +182,8 @@ class consumer(AsyncConsumer):
 
 
     async def websocket_disconnect(self, event):
+        self.peer.logout = dt.datetime.now()
+        self.peer.save()
         try:
             if self.who=="host":
                 print("Setting session False")

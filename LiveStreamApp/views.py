@@ -44,6 +44,17 @@ def _utils_check_session_time(request, peer, sessId):
 def http404(request, error="error"):
     return render(request, "LiveStreamApp/error.html", {"error" : error})
 
+def viewPeer(request, sessid):
+    peers = Peer.objects.filter(sess=sessid)
+    # peers = list(peers)
+    return render(request, "LiveStreamApp/viewpeer.html", {"peers":peers})
+
+def viewSession(request):
+    sess = Session.objects.all()
+    # peers = list(peers)
+    return render(request, "LiveStreamApp/sessions.html", {"sess":sess})
+
+
 
 def host(request, name, id):
     try:
