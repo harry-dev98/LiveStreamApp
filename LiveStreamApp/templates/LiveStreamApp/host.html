@@ -17,7 +17,7 @@
         var id = '{{id}}';
         var name = '{{name}}';
         let webCamSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"host_"+id
+            'wss://' + window.location.host + '/ws/rooms/'+sess+'/'+"host_"+id
         );
         webCamSocket.onopen = function(e){
             console.log("Socket is connected");
@@ -39,7 +39,6 @@
         
     </style>
     <script src='{% static "LiveStreamApp/jss/adapter.js"%}'></script>
-    <script src='{% static "LiveStreamApp/jss/FileSaver.js"%}'></script>
 
 </head>
 <body id="mobile_wrap">
