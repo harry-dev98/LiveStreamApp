@@ -19,6 +19,4 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('webinar/', include('LiveStreamApp.urls')),
-    path('api/', include('APIs.urls')),
-    path('stats/', include("stats.urls")),
 ]

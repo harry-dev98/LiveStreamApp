@@ -2,10 +2,13 @@ from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from django.shortcuts import redirect
 from channels.db import database_sync_to_async
+from django.shortcuts import Http404
+from django.core.exceptions import ObjectDoesNotExist
 
-from .apps import Var
-from .models import Session
+# from .apps import Var
+from .models import Session, Peer
 
+import datetime as dt
 import json
 import pickle
 
@@ -15,33 +18,34 @@ class consumer(AsyncConsumer):
     groupName = ""
     sessId = None
     who = ""
+    peer = None
     isActiveHost=False
-        
+    def exception_handler(self, error):
+        print(error)
+        if self.sessId and self.isActiveHost == True:
+            if self.sessId.isActive == True:
+                self.sessId.isActive = False
+                self.sessId.save()
+        self.peer.logout = dt.datetime.now()
+        print(self.peer.logout)
+        self.peer.save()
+        print("saving logout")
+        raise StopConsumer()
+
     async def websocket_connect(self, event):
         try:
             await self.send({
                 "type" : "websocket.accept",
             })
             self.name = self.scope['url_route']['kwargs']['name']
-            self.who = self.scope['url_route']['kwargs']['who']
+            self.User = self.scope['url_route']['kwargs']['identity']
+            who_id = self.User.split("_")
+            print(self.name, who_id)
+            self.who = who_id[0]
+            self.peer = Peer.objects.get(id=who_id[1])
             self.groupName = self.name+"_"+self.who
-            self.User = "{}_id_{}".format(self.who, Var.count+1)
-            try:
-                print("verifying the session id ", self.name)
-                self.sessId = await database_sync_to_async(Session.objects.get)(pk=self.name)
-                
-            except Session.DoesNotExist:
-                print("Disconnectinggg no sessio")
-                await self.send({
-                "type" : "websocket.disconnect"
-                })
-                raise StopConsumer
-                
-            # Var.users[self.User] = Var.count+1
-            # print("connection requested", event)
-            # try:
+            self.sessId = Session.objects.get(pk=self.name)
             if self.who == "host":
-                print("is Host")
                 if self.sessId.isActive == True:
                     self.send({
                         "type" : "websocket.send",
@@ -64,10 +68,9 @@ class consumer(AsyncConsumer):
                             'what' : 'open',
                             'message': "we got a Host {}..".format(self.User),
                             'user' : self.User,
-                            'userId' : Var.count+1
+                            'userId' : self.peer.id
                         }
                     )
-                Var.count += 1
                 
             if self.who == "peer":
                 if self.sessId.isActive == True:
@@ -78,10 +81,9 @@ class consumer(AsyncConsumer):
                             'what' : 'open',
                             'message': "we got a new user {}..".format(self.User),
                             'user' : self.User,
-                            'userId' : Var.count+1
+                            'userId' : self.peer.id
                         }
                     )
-                    Var.count += 1
                 else:
                     self.send({
                         "type" : "websocket.send",
@@ -97,7 +99,7 @@ class consumer(AsyncConsumer):
                 "type" : "websocket.send",
                 "text" : json.dumps({
                     "recv" : "open",
-                    "userid" : Var.count,
+                    "userid" : self.peer.id,
                     "user" : self.User,
                     "message" : "Sockets connected"
                 })
@@ -111,13 +113,10 @@ class consumer(AsyncConsumer):
                 self.name+"_"+"all",
                 self.channel_name
             )
-        except Exception:
-            print("exception occured,,..")
-            if self.sessId and self.isActiveHost == True:
-                if self.sessId.isActive == True:
-                    self.sessId.isActive = False
-                    self.sessId.save()
-            raise StopConsumer()
+        except Exception as error:
+            print("exception occured,,..", error)
+            self.exception_handler(error)
+            # raise StopConsumer()
 
     async def websocket_receive(self, event):
         # print("recieving.. ", event)
@@ -125,8 +124,6 @@ class consumer(AsyncConsumer):
             data = json.loads(event["text"])
             if "offer" in data:
                 # print("recieved offer..broadcasting to all peers...")
-                Var.offered = True
-                Var.offer = data["offer"]
                 await self.channel_layer.group_send(
                     self.name+"_peer",
                     {
@@ -140,8 +137,8 @@ class consumer(AsyncConsumer):
                 print("offer broadcasted to peers...")
 
             elif "answer" in  data:
-                Var.answered = True
-                Var.Answer = data["answer"]
+                # Var.answered = True
+                # Var.Answer = data["answer"]
                 # print("recived answer.. broadcasting to host")
                 await self.channel_layer.group_send(
                     self.name+"_host",
@@ -180,16 +177,16 @@ class consumer(AsyncConsumer):
                 pass
             else:
                 pass
-        except Exception:
-            print("exception occured,,..")
-            if self.sessId and self.isActiveHost == True:
-                if self.sessId.isActive == True:
-                    self.sessId.isActive = False
-                    self.sessId.save()
+        except Exception as error: 
+            print("exception occured,,..", error)
+            self.exception_handler(error)
             raise StopConsumer()
 
 
     async def websocket_disconnect(self, event):
+        self.peer.logout = dt.datetime.now()
+        self.peer.save()
+        print("saving logout")
         try:
             if self.who=="host":
                 print("Setting session False")
@@ -209,12 +206,8 @@ class consumer(AsyncConsumer):
                 "type" : "websocket.close"
             })
             raise StopConsumer
-        except Exception:
-            print("exception occured,,..")
-            if self.sessId and self.isActiveHost == True:
-                if self.sessId.isActive == True:
-                    self.sessId.isActive = False
-                    self.sessId.save()
+        except Exception as error:
+            self.exception_handler(error)
             raise StopConsumer()
 
     async def websocket_broadcast(self, event):
@@ -288,10 +281,6 @@ class consumer(AsyncConsumer):
                             "message":"iceCandidates recieved"
                         })
                     })
-        except Exception:
-            print("exception occured,,..")
-            if self.sessId and self.isActiveHost == True:
-                if self.sessId.isActive == True:
-                    self.sessId.isActive = False
-                    self.sessId.save()
+        except Exception as error:
+            self.exception_handler(error)
             raise StopConsumer()

@@ -16,11 +16,14 @@ let Users = [];
 let user;
 let userCnt=0;
 let localStream;
+let VStream;
 let remoteDesc; 
 let mediaRecorder;
 let recordedBlobs;
 let isLive=false;
 let isStreaming=false;
+
+
 
 var video = document.getElementById('video');
 let dropArea = document.getElementById('drop-area');
@@ -33,6 +36,10 @@ let liveTag = document.getElementById("live");
 let sendmsg = document.getElementById("submit");
 let txt = document.getElementById("txt");
 let close = document.getElementById("close");
+
+// window.onload= (e)=>{
+//     btn_live.click();
+// }
 close.onclick=(e)=>{
     stopStreaming();
     liveTag.style.opacity=0;
@@ -44,26 +51,33 @@ let files;
 
 sendmsg.onclick = (e)=>{
     let m = txt.value;
-    txt.value="";
-    for(const [u, U] of Object.entries(Users)){
-        U.datachann.send(JSON.stringify({
-            "message" : true,
-            "text" : m
-        }))
+    if(m!=""){
+        txt.value="";
+        for(const [u, U] of Object.entries(Users)){
+            U.datachann.send(JSON.stringify({
+                "message" : true,
+                "text" : m,
+                "sender" : name
+            }))
+        }
+        let M = document.createElement('p');
+        M.innerText = name+" : "+m;
+        msgBox.appendChild(M);
     }
-    let M = document.createElement('p');
-    M.innerText = "Teacher : "+m;
-    msgBox.appendChild(M);
 }
 
 btn_live.onclick = (e)=>{
-    if(!isLive){
-        isLive=true;
-    }
+    isLive=true;
     console.log("livenow");
     liveTag.style.opacity = 1;
     btn_live.style.display="none";
-    video.play();
+    if(video.paused){
+        video.play();
+    }
+    else{
+        video.pause();
+        video.play();
+    }
 }
 
 video.onpause = (e)=>{
@@ -87,119 +101,121 @@ video.onplay=(e)=>{
         liveTag.style.opacity=1;
         btn_live.style.display = "none";
     }
+    else{
+        // video.pause();
+    }
     console.log("plahying videosss");
 }
-// btn_stream.onclick = event=>{
-//     if(btn_stream.innerHTML == "Stop"){
-//         video.pause();
-//         if(isLive)stopStreaming();
-//     }
-//     else{
-//         video.play();
-//         if(isLive)startStreaming();
-//     }
-// }
-// ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, (e)=>{
-//         e.preventDefault();
-//         e.stopPropagation();
-//     }, false);
-// });
-// ['dragenter', 'dragover'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, (e)=>{
-//         dropArea.classList.add('highlight');
-//     }, false);
-// });
-// ['dropleave', 'drop'].forEach(eventName => {
-//     dropArea.addEventListener(eventName, (e)=>{
-//         dropArea.classList.remove('highlight');
-//         }, false);
-// });
+
 function addImg(file){
-    // let div = document.createElement("div");
-    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
-    let img = document.createElement('img');
+    let img = document.createElement('iframe');
     img.src = file;
     img.alt="Failed To Load Image";
-    // img.setAttribute('id' , 'docExpand');
     img.setAttribute('width', '100%');
     img.setAttribute('height', '100%');
-    // img.height = "100%";
-    // img.width = "100%";
     msgBox.appendChild(img);
-    // msgBox.appendChild(div);
+
 }
 function addpdf(file){
-    // let div = document.createElement("div");
-    // div.className = "col-md-7 col-xs-7 col-sm-7 col-lg-7 doc";
     var ifrm = document.createElement('iframe');
-    // ifrm.setAttribute('id', "docExpand");
-    // ifrm.setAttribute('height', '100%');
-    // ifrm.setAttribute('width', '100%'); // assign an id
     ifrm.height = "100%";
     ifrm.width = "100%";
     ifrm.src = file;
     msgBox.appendChild(ifrm);
-    // msgBox.appendChild(div);
 }
+
 dropArea.onchange = (e)=>{
-    // let dt = e.dataTransfer;
     console.log(e.target.files);
-    files = Array.from(e.target.files);
-    // console.log(dropArea);
+    let file = e.target.files[0];
     dropArea.value = "";
-    if(files.length>1){
-        console.log("onefile at a time..");
-        return;
+    async function send_then_preview(file){
+        for (const [user, U] of Object.entries(Users)){
+            console.log("sending to user..", user);
+            let DataChann = U.datachann;
+            let promise_toSend = new Promise(async (resolve, reject)=>{
+                if(file){
+                    console.log("sending metadata");
+                    let bool =await send_metaData(DataChann, file);
+                    console.log("sending metadata");
+                    if(bool){
+                        resolve(DataChann, file);
+                    }
+                    else{
+                        send_then_preview(file);
+                    }
+                } 
+                else reject("no file to send");
+            })
+            
+            await promise_toSend
+            .then(await send_chunks(DataChann, file))
+            .then(await preview(file))
+            .catch((err)=>{
+                console.log(err);
+            });
+        }
     }
-    // fileCount = fileCount + files.length;
-    // dropArea.style.display="none";
-    // setTimeout(async()=>{dropArea.style.display='block';}, 3000);
-    files.forEach(async (file)=>{   
-        let promise = new Promise((resolve, reject)=>{
-            if(file) setTimeout(resolve(file), 1000);
-            else reject("no file to send");
-        })
-        await promise
-        .then(preview_send(file))
-        .catch((err)=>{
-            console.log(err);
-        });
-    });
-};
+    send_then_preview(file);
+}
+
 async function send_metaData(DataChann, file){
-    console.log("metadata sending of "+file.name);
-    let name = file.name;
-    let size = file.size;
-    let type = file.type;
-    let send_d = JSON.stringify({
-        "file" : name,
-        "size" : size,
-        "type" : type
-    });
-    await DataChann.send(send_d);
+    return new Promise(async(resolve, reject)=>{
+        try{
+            console.log("metadata sending of "+file.name);
+            let name = file.name;
+            let size = file.size;
+            let type = file.type;
+            let send_d = JSON.stringify({
+                "metaData" : true,
+                "file" : name,
+                "size" : size,
+                "type" : type
+            });
+            await DataChann.send(send_d);
+            console.log("metadata sent of "+file.name);
+            resolve("DONE");
+        }
+        catch(e){
+            reject(e);
+        }
+    })
     // await webCamSocket.send(send_d);
-    console.log("metadata sent of "+file.name);
-    return DataChann;
 }
 async function send_chunks(DataChann, file){
     console.log("sending chunks of "+file.name);
     let chunk = 8 * 1024  //* 1024;
     let left = file.size;
-    let offset=0;
-    while(left>0){
-        chunk = (chunk > left) ? left : chunk;
-        var slice = file.slice(offset, offset+chunk);
+    let offset = 0;
+    let slice;
+    let fileReader = new FileReader();
+    fileReader.onerror = (e)=>{
+        console.log("error reading file.. ",e);
+    };
+    fileReader.onabort = (e)=>{
+        console.log("aborted reading a file", e);
+    };
+    fileReader.onload = async (e)=>{
+        // console.log("file chunk Loaded..", e);
+        await DataChann.send(e.target.result);
         // await webCamSocket.send(slice);
-        await DataChann.send(slice);
+        if(left!=0){
+            readChunks();
+        }
+    }
+    async function readChunks(){
+        chunk = (chunk > left) ? left : chunk;
+        slice = file.slice(offset, offset+chunk);
+        // console.log(slice);
+        fileReader.readAsArrayBuffer(slice);
         left -= chunk;
         offset += chunk;
         console.log("sent ",(file.size-left),"/",file.size);
     }
+    await readChunks(0);
     console.log("sent file.. "+ file.name);   
 }
-async function preview_send(file){
-    console.log("file..",file);
+
+function preview(file){
     var objectURL = URL.createObjectURL(file);
     var Ext = file.name.substring(file.name.lastIndexOf('.') + 1).toLowerCase();
     console.log("extension of file is "+ Ext);
@@ -210,16 +226,17 @@ async function preview_send(file){
         addpdf(objectURL);
     }
     console.log("added files...");
-    for (const [user, U] of Object.entries(Users)){
-    console.log("user..", user);
-    let DataChann = U.datachann;
-    await send_metaData(DataChann, file)
-    .then(send_chunks(DataChann, file))
-    .catch((err)=>{
-        console.log("error while sending ", err);
-        })
-    };
+    return file;
 }
+
+function _util_extract_video(stream){
+    let V = stream.getVideoTracks();
+    VStream = new MediaStream();
+    VStream.addTrack(V[0]);
+    video.srcObject = VStream;
+    // video.play();
+}   
+
 function getStream(){
     if(navigator.mediaDevices){
         console.log("need permissions to user media devices");
@@ -228,14 +245,13 @@ function getStream(){
             echoCancellation: {exact: true}
             },
             video: {
-            width: 1280, height: 720
+            width: 640, height: 360
             }
         })
         .then(stream=>{
             console.log("media devices acquired..");
             localStream = stream;
-            video.srcObject = stream;
-            // video.play();
+            _util_extract_video(stream);
             return stream;
         })
         .then(()=>{
@@ -259,10 +275,11 @@ function stopStreaming(){
     };
 }
 function startStreaming(){
-    console.log("Starting streamingg")
     for (const [user, U] of Object.entries(Users)){
         let Conn = U.conn;
-        getStream();
+        // getStream();
+        console.log("Starting streamingg for "+user);
+        
         localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
         offer(Conn, user);
     }
@@ -340,9 +357,10 @@ let offer = async (Conn, user)=>{
 
 };
 webCamSocket.onclose = (event)=>{
+    console.log("socket is closeddd");
     setTimeout(()=>{
         let webCamSocket = new WebSocket(
-            'wss://' + window.location.host + '/ws/rooms/'+sess+'/host/'
+            'ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id
         );
         
         webCamSocket.onopen = function(e){
@@ -394,11 +412,16 @@ webCamSocket.onmessage = (event)=>{
     }
     else if(data.recv == "close_broadcast"){
         console.log("a peer left..");
-        delete Users[data.user];
-        peers.innerText = "Active "+(Object.keys(Users).length);
-        // for(const [u, U] of Object.entries(Users)){
-        //     console.log(u,U);
-        // }
+        if(Users[data.user]){
+            Users[data.user]["conn"].close();
+            Users[data.user]["datachann"].close();
+            delete Users[data.user];
+            peers.innerText = "Active "+(Object.keys(Users).length);
+        }
+        else{
+            console.log("no such user");
+        }
+
     }
     else if(data.recv == "open_broadcast"){
         console.log(data.open_broadcast); 
@@ -410,18 +433,20 @@ webCamSocket.onmessage = (event)=>{
                 "conn" : new RTCPeerConnection(configuration)
             };
             Users[user]["datachann"] = Users[user]["conn"].createDataChannel(user+"_datachann");
+            Users[user]["datachann"].binarayType = "arraybuffer"
             peers.innerText = "Active "+(Object.keys(Users).length);
         }
         console.log("created instance of a new user.. conn aswell as data channel")
         new Promise((resolve, reject)=>{
             try{
-                resolve(Users[data.user]);
+                resolve(data.user);
             }
             catch(err){
                 reject(err);
             }
         })
-        .then((U)=>{
+        .then((u)=>{
+            let U = Users[u];
             let Conn = U.conn;
             let Chann = U.datachann;
             Conn.onicecandidate = async (event)=>{
@@ -437,8 +462,10 @@ webCamSocket.onmessage = (event)=>{
             };
             Conn.oniceconnectionstatechange = (event)=>{
                 console.log("handling the connection change...");
-                // if(Conn.iceConnectionState == "close" || Conn.iceConnectionState == "disconnected"){
-                    peers.innerText = "Active "+(Object.keys(Users).length);
+                if(U){
+                    delete Users[u];
+                }
+                peers.innerText = "Active "+(Object.keys(Users).length);
                 console.log("state of connection is ", Conn.iceConnectionState);
             };
             Conn.onerror = (event)=>{
@@ -467,19 +494,17 @@ webCamSocket.onmessage = (event)=>{
                 recvChann.onmessage = (event)=>{
                     let m = JSON.parse(event.data);
                     let M = document.createElement('p');
-                    M.innerText = "Student : "+ m.text;
+                    M.innerText = m.sender+" : "+ m.text;
                     msgBox.appendChild(M);
+                };
             };
-        };
-        if(isLive==true && isStreaming==true){
-            localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
-            offer(Conn, user);
-        }
-        // else{
-        //     User_onwait[user]=U;
-        // }
-    })
-    .catch((e)=>{
-        console.log("error");
-    });
-}}
+            if(isLive==true && isStreaming==true){
+                localStream.getTracks().forEach(track => Conn.addTrack(track, localStream));
+                offer(Conn, user);
+            }
+        })
+        .catch((e)=>{
+            console.log("error", e);
+        });
+    }
+}
