@@ -439,13 +439,14 @@ webCamSocket.onmessage = (event)=>{
         console.log("created instance of a new user.. conn aswell as data channel")
         new Promise((resolve, reject)=>{
             try{
-                resolve(Users[data.user]);
+                resolve(data.user);
             }
             catch(err){
                 reject(err);
             }
         })
-        .then((U)=>{
+        .then((u)=>{
+            let U = Users[u];
             let Conn = U.conn;
             let Chann = U.datachann;
             Conn.onicecandidate = async (event)=>{
@@ -461,8 +462,10 @@ webCamSocket.onmessage = (event)=>{
             };
             Conn.oniceconnectionstatechange = (event)=>{
                 console.log("handling the connection change...");
-                // if(Conn.iceConnectionState == "close" || Conn.iceConnectionState == "disconnected"){
-                    peers.innerText = "Active "+(Object.keys(Users).length);
+                if(U){
+                    delete Users[u];
+                }
+                peers.innerText = "Active "+(Object.keys(Users).length);
                 console.log("state of connection is ", Conn.iceConnectionState);
             };
             Conn.onerror = (event)=>{
