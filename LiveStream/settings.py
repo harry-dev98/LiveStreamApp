@@ -15,8 +15,6 @@ INSTALLED_APPS = [
     'channels',
     'LiveStreamApp',
     'rest_framework',
-    'APIs',
-    'stats',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
