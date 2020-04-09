@@ -35,8 +35,8 @@ class Peer(models.Model):
     section = models.CharField(max_length=20, default="")
     mob = models.CharField(max_length=10)
     who = models.CharField(max_length=10)
-    login = models.DateTimeField(auto_now=True)
-    logout = models.DateTimeField(auto_now=True)
+    login = models.DateTimeField(blank=True, null=True)
+    logout = models.DateTimeField(blank=True, null=True)
     
     def __str__(self):
         return self.name

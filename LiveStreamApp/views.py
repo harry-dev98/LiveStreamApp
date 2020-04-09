@@ -5,13 +5,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import Peer, Session
 from .apps import Var
 
-import datetime
+import datetime as dt
 
 def _utils_is_valid_session(peer, sessId):
     sess = peer.sess
-    time_now = datetime.datetime.now()
+    time_now = dt.datetime.now()
     start_time = sess.startTime
-    end_time = start_time + datetime.timedelta(minutes=sess.interval)
+    end_time = start_time + dt.timedelta(minutes=sess.interval)
     # print(time_now.replace(tzinfo=None),start_time.replace(tzinfo=None), end_time.replace(tzinfo=None))
     if time_now.replace(tzinfo=None) > end_time.replace(tzinfo=None):
         return False
@@ -26,9 +26,9 @@ def _utils_check_session_time(request, peer, sessId):
     if sess.sessId != sessId:
         return render(request, "LiveStreamApp/error.html", {'error':"Not a Valid Session. Kindly avoid tresspassing into other webinar","which":"register"})
 
-    time_now = datetime.datetime.now()
+    time_now = dt.datetime.now()
     start_time = sess.startTime
-    end_time = start_time + datetime.timedelta(minutes=sess.interval)
+    end_time = start_time + dt.timedelta(minutes=sess.interval)
     # print(time_now.replace(tzinfo=None),start_time.replace(tzinfo=None), end_time.replace(tzinfo=None))
     if time_now.replace(tzinfo=None) > end_time.replace(tzinfo=None):
         return render(request, "LiveStreamApp/error.html", {"error":"Session has expired, Sorry :'("})
@@ -79,6 +79,7 @@ def hostlogin(request, name):
             peer.sess = sessId
             peer.name = user
             peer.mob = mob
+            peer.login = dt.datetime.now()
             peer.who = "Teacher"
         except ObjectDoesNotExist:
             raise Http404()
@@ -116,6 +117,7 @@ def peerlogin(request, name):
             peer.mob = mob
             peer.clss = _class
             peer.section = section
+            peer.login = dt.datetime.now()
             peer.who = "Student"
         except:
             raise Http404

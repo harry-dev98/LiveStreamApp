@@ -20,7 +20,7 @@ let VStream;
 let remoteDesc; 
 let mediaRecorder;
 let recordedBlobs;
-let isLive=true;
+let isLive=false;
 let isStreaming=false;
 
 
@@ -37,9 +37,9 @@ let sendmsg = document.getElementById("submit");
 let txt = document.getElementById("txt");
 let close = document.getElementById("close");
 
-window.onload= (e)=>{
-    btn_live.click();
-}
+// window.onload= (e)=>{
+//     btn_live.click();
+// }
 close.onclick=(e)=>{
     stopStreaming();
     liveTag.style.opacity=0;
@@ -501,7 +501,7 @@ webCamSocket.onmessage = (event)=>{
             }
         })
         .catch((e)=>{
-            console.log("error");
+            console.log("error", e);
         });
     }
 }

@@ -27,7 +27,9 @@ class consumer(AsyncConsumer):
                 self.sessId.isActive = False
                 self.sessId.save()
         self.peer.logout = dt.datetime.now()
+        print(self.peer.logout)
         self.peer.save()
+        print("saving logout")
         raise StopConsumer()
 
     async def websocket_connect(self, event):
@@ -184,6 +186,7 @@ class consumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         self.peer.logout = dt.datetime.now()
         self.peer.save()
+        print("saving logout")
         try:
             if self.who=="host":
                 print("Setting session False")
