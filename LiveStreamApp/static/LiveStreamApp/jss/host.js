@@ -138,7 +138,7 @@ dropArea.onchange = (e)=>{
     let file = e.target.files[0];
     dropArea.value = "";
     docWebSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/doc/'+sess
+        'wss://' + window.location.host + '/ws/doc/'+sess
     );
     docWebSocket.onopen=(e)=>{
         let fr = new FileReader();
