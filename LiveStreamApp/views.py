@@ -6,6 +6,8 @@ from .models import Peer, Session
 from .apps import Var
 
 import datetime as dt
+import os
+import json
 
 
 def _utils_is_valid_session(peer, sessId):
@@ -135,4 +137,5 @@ def webinar(request):
 
 
 def downloadVideo(request, name):
-    return render_to_response("LiveStreamApp/download.html", {"sess":name})
+    dirs = os.listdir("./media/" + name)
+    return render_to_response("LiveStreamApp/download.html", {"sess":name, "dirs": (dirs)})

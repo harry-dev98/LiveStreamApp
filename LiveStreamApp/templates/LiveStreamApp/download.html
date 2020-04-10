@@ -1,5 +1,4 @@
 {% load static %}
-{% load media %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -37,23 +36,25 @@
                 <br><br><br>
                     <div class="page-content" style="padding:50px;box-sizing:border-box">
                         <!-- Slider -->
-                        <div id="log" class="container" >
-                            <center><h3 style="font-size: 20px;color: beige;"><b></b></h3></center>   
-                            <center><a id="download" style="font-size: 20px;color: beige;" href='{% media "{{sess}}.webm"%}'><b>Download Video</b></a></center>   
-                            <script>
-                                let d = document.getElementById("download");
-                                let l = document.getElementById("log");
-                                d.onclick = (e)=>{
-                                    d.remove()
-                                    l.innerHTML = "Download Starts in a few seconds..";
-                                    
-
-                                }
-                            </script>
+                        <div id="links" class="container" >
                         </div>  
                     </div>
                 </div>  
             </div>   
         </div>  
     </body>
+    <script>
+        let linkBox = document.getElementById("links");
+        let dirs = {{dirs | safe}};
+        let sess = '{{sess | safe}}';
+        dirs.forEach((dir)=>{
+            let a = document.createElement('a');
+            a.href = "http://"+window.location.host+"/media/"+sess+"/"+dir;
+            a.innerHTML = dir;
+            a.style.fontSize = '30px';
+            a.style.color = 'white'; 
+            linkBox.appendChild(a);
+            linkBox.appendChild(document.createElement("br"));
+        });
+    </script>
 </html>
