@@ -17,11 +17,18 @@
         var id = '{{id}}';
         var name = '{{name}}';
         let webCamSocket = new WebSocket(
-            'wss://' + window.location.host + '/ws/rooms/'+sess+'/'+"host_"+id
+            'ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"host_"+id
+        );
+        let videoSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/videos/'+sess
         );
         webCamSocket.onopen = function(e){
             console.log("Socket is connected");
         }
+        videoSocket.onopen = function(e){
+            console.log("Socket is connected");
+        }
+        
         
     </script>
     <style>

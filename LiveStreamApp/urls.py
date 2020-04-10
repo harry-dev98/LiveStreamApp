@@ -1,4 +1,5 @@
 from django.urls import path
+from django.conf.urls.static import static
 
 from .views import *
 
@@ -11,4 +12,5 @@ urlpatterns = [
     path("<str:name>/host/<int:id>/", host, name='host'),
     path("404/", http404, name="404"),
     path("sessions/", viewSession, name="sessions"),
-]
+    path("<str:name>/download", downloadVideo, name="download")
+] 

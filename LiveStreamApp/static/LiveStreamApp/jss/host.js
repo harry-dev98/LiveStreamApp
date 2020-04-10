@@ -22,8 +22,7 @@ let mediaRecorder;
 let recordedBlobs;
 let isLive=false;
 let isStreaming=false;
-
-
+var docWebSocket;
 
 var video = document.getElementById('video');
 let dropArea = document.getElementById('drop-area');
@@ -44,7 +43,6 @@ close.onclick=(e)=>{
     stopStreaming();
     liveTag.style.opacity=0;
 }
-// console.log(msgBox);
 
 let fileCount = 0;
 let files;
@@ -85,6 +83,12 @@ video.onpause = (e)=>{
     if(isStreaming && isLive){
     // if(isLive){
         stopStreaming();
+        if(mediaRecorder)
+            mediaRecorder.pause();
+        // setTimeout(
+        //     mediaRecorder.stop(),
+        //     1000
+        // );
         liveTag.style.opacity=0;
         isStreaming=false;
         btn_live.style.display = "block";
@@ -97,6 +101,12 @@ video.onplay=(e)=>{
     if(!isStreaming && isLive){
     // if(isLive &&){
         startStreaming();
+        if(mediaRecorder){
+            mediaRecorder.resume();
+        }
+        else{
+            startRecording();
+        }
         isStreaming=true;
         liveTag.style.opacity=1;
         btn_live.style.display = "none";
@@ -125,9 +135,23 @@ function addpdf(file){
 }
 
 dropArea.onchange = (e)=>{
-    console.log(e.target.files);
     let file = e.target.files[0];
     dropArea.value = "";
+    docWebSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/doc/'+sess
+    );
+    docWebSocket.onopen=(e)=>{
+        let fr = new FileReader();
+        fr.onload = (e)=>{
+            docWebSocket.send(JSON.stringify({
+                "file" : file.name,
+                "data" : e.target.result,
+            }));
+            docWebSocket.close();
+        }
+        fr.readAsDataURL(file);
+        // fr.readAsBinaryString(file);
+    }
     async function send_then_preview(file){
         for (const [user, U] of Object.entries(Users)){
             console.log("sending to user..", user);
@@ -151,6 +175,7 @@ dropArea.onchange = (e)=>{
             .then(await send_chunks(DataChann, file))
             .then(await preview(file))
             .catch((err)=>{
+                preview(file);
                 console.log(err);
             });
         }
@@ -165,13 +190,15 @@ async function send_metaData(DataChann, file){
             let name = file.name;
             let size = file.size;
             let type = file.type;
-            let send_d = JSON.stringify({
+            let d = {
                 "metaData" : true,
                 "file" : name,
                 "size" : size,
                 "type" : type
-            });
+            }
+            let send_d = JSON.stringify(d);
             await DataChann.send(send_d);
+            
             console.log("metadata sent of "+file.name);
             resolve("DONE");
         }
@@ -197,6 +224,7 @@ async function send_chunks(DataChann, file){
     fileReader.onload = async (e)=>{
         // console.log("file chunk Loaded..", e);
         await DataChann.send(e.target.result);
+        // await docWebSocket(e.target.result);
         // await webCamSocket.send(slice);
         if(left!=0){
             readChunks();
@@ -255,8 +283,10 @@ function getStream(){
             return stream;
         })
         .then(()=>{
-            // console.log("started recording..")
-            // startRecording();
+            if(isLive && isStreaming){
+                console.log("started recording..")
+                startRecording();
+            }
         })
         .catch(err=>{
             console.log("error while accesing media", err);
@@ -284,6 +314,7 @@ function startStreaming(){
         offer(Conn, user);
     }
 }
+let totB = 0;
 function startRecording() {
     recordedBlobs = [];
     let options = {
@@ -292,7 +323,7 @@ function startRecording() {
     if(!MediaRecorder.isTypeSupported(options.mimeType)){
         console.log(options.mimeType, " is not supported!!");
         options = {
-            mimeType : 'video/webm;codecs=vp8'
+            mimeType : 'video/webm;codecs=vp8,opus'
         };
         if(!MediaRecorder.isTypeSupported(options.mimeType)){
             console.log(options.mimeType, " is not supported!!");
@@ -309,17 +340,29 @@ function startRecording() {
     }
     try{
         mediaRecorder = new MediaRecorder(localStream, options);
+        if( videoSocket.readyState == WebSocket.CLOSED){
+            videoSocket = new WebSocket(
+                'ws://' + window.location.host + '/ws/videos/'+sess
+            );
+        }
     }
     catch(err){
         console.log("Not recording.. ", err);
     }
+    mediaRecorder.onstop = (event)=>{
+        console.log("socket clossingg, recording stopped");
+        videoSocket.close();
+    }
     mediaRecorder.ondataavailable = (event)=>{
         if(event.data && event.data.size>0){
+            console.log("sending..", event.data);
             recordedBlobs.push(event.data);
+            videoSocket.send(event.data);
         }
     }
-    mediaRecorder.start(10);
+    mediaRecorder.start(1000);
 }
+
 function download(){
     mediaRecorder.stop();
     const blob = new Blob(recordedBlobs, {type:'video/webm'});

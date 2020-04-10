@@ -9,9 +9,60 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import Session, Peer
 
 import datetime as dt
+import os
 import json
 import pickle
+import base64
+# import ffmpeg
 
+class docConsumer(AsyncConsumer):
+    async def websocket_connect(self, event):
+        self.sess = self.scope["url_route"]["kwargs"]["sess"]
+        if not os.path.isdir("media/{}".format(self.sess)):
+            os.mkdir("media/{}".format(self.sess))
+        
+        await self.send({
+            "type" : "websocket.accept",
+        })
+    async def websocket_receive(self, event):
+        data = json.loads(event['text'])
+        self.temp = open("media/{}/{}".format(self.sess, data["file"]), "wb")
+        _, encoded = data["data"].split(",", 1)
+        binary = base64.b64decode(encoded)
+        self.temp.write(binary)
+        # print(data["data"])
+        self.temp.close()
+
+    async def websocket_disconnect(self, event):
+        await self.send({
+            "type" : "websocket.close",
+        })
+        raise StopConsumer()
+
+
+class videoConsumer(AsyncConsumer):
+    async def websocket_connect(self, event):
+        self.sess = self.scope["url_route"]["kwargs"]["sess"]
+        if not os.path.isdir("media/{}".format(self.sess)):
+            os.mkdir("media/{}".format(self.sess))
+        self.temp = open("media/{}/{}_{date:%Y-%m-%d_%H:%M:%S}.webm".format(self.sess, self.sess, date=dt.datetime.now()), "wb")
+
+        await self.send({
+            "type": "websocket.accept",
+        })
+        print("Video websocket connected")
+
+    async def websocket_disconnect(self, event):
+        self.temp.close()
+        await self.send({
+            "type" : "websocket.close",
+        })
+        print("closing video, Video websocket closed")
+        raise StopConsumer()
+
+    async def websocket_receive(self, event):
+        self.temp.write(event["bytes"])
+        
 class consumer(AsyncConsumer):
     name = ""
     User = ""
@@ -119,7 +170,8 @@ class consumer(AsyncConsumer):
             # raise StopConsumer()
 
     async def websocket_receive(self, event):
-        # print("recieving.. ", event)
+
+        print("recieving.. ", event)
         try:
             data = json.loads(event["text"])
             if "offer" in data:

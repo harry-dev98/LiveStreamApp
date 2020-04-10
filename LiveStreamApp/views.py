@@ -7,6 +7,7 @@ from .apps import Var
 
 import datetime as dt
 
+
 def _utils_is_valid_session(peer, sessId):
     sess = peer.sess
     time_now = dt.datetime.now()
@@ -132,3 +133,6 @@ def peerlogin(request, name):
 def webinar(request):
     return render_to_response("LiveStreamApp/base.html")
 
+
+def downloadVideo(request, name):
+    return render_to_response("LiveStreamApp/download.html", {"sess":name})
