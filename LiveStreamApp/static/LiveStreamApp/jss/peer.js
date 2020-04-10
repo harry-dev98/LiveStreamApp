@@ -145,7 +145,7 @@ webCamSocket.onclose = (event)=>{
     console.log("socket is closeddd");
     
     setTimeout(()=>{
-            webCamSocket = new WebSocket('ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id);
+            webCamSocket = new WebSocket('wss://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id);
         }, 2000);
     }
     

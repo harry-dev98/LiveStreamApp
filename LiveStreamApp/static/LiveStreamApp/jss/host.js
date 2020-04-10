@@ -127,7 +127,7 @@ dropArea.onchange = (e)=>{
     let file = e.target.files[0];
     dropArea.value = "";
     docWebSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/doc/'+sess
+        'wss://' + window.location.host + '/ws/doc/'+sess
     );
     docWebSocket.onopen=(e)=>{
         let fr = new FileReader();
@@ -331,7 +331,7 @@ function startRecording() {
         mediaRecorder = new MediaRecorder(localStream, options);
         if( videoSocket.readyState == WebSocket.CLOSED){
             videoSocket = new WebSocket(
-                'ws://' + window.location.host + '/ws/videos/'+sess
+                'wss://' + window.location.host + '/ws/videos/'+sess
             );
         }
     }
@@ -392,7 +392,7 @@ webCamSocket.onclose = (event)=>{
     console.log("socket is closeddd");
     setTimeout(()=>{
         let webCamSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id
+            'wss://' + window.location.host + '/ws/rooms/'+sess+'/'+"peer_"+id
         );
         
         webCamSocket.onopen = function(e){
