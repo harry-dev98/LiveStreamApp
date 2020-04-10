@@ -91,7 +91,7 @@ class consumer(AsyncConsumer):
             self.name = self.scope['url_route']['kwargs']['name']
             self.User = self.scope['url_route']['kwargs']['identity']
             who_id = self.User.split("_")
-            print(self.name, who_id)
+            # print(self.name, who_id)
             self.who = who_id[0]
             self.peer = Peer.objects.get(id=who_id[1])
             self.groupName = self.name+"_"+self.who
@@ -170,8 +170,6 @@ class consumer(AsyncConsumer):
             # raise StopConsumer()
 
     async def websocket_receive(self, event):
-
-        print("recieving.. ", event)
         try:
             data = json.loads(event["text"])
             if "offer" in data:

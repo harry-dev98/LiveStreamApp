@@ -1,18 +1,7 @@
 "use strict"
-
-const configuration = {
-    'iceServers' : [{
-        urls: ['turn:conf.zedderp.com'],
-        username: 'zeddlabz',
-        credential: '&io1vb%QM^lZnG%61'
-    }]
-};
-var offerConstraints = {
-    offerToReceiveAudio : 1,
-    offerToReceiveVideo : 1
-};
+const configuration = {'iceServers':[{urls:['turn:conf.zedderp.com'],username:'zeddlabz',credential:'&io1vb%QM^lZnG%61'}]};
+var offerConstraints = {offerToReceiveAudio:1,offerToReceiveVideo:1};
 let Users = [];
-// let User_onwait=[];
 let user;
 let userCnt=0;
 let localStream;
@@ -138,7 +127,7 @@ dropArea.onchange = (e)=>{
     let file = e.target.files[0];
     dropArea.value = "";
     docWebSocket = new WebSocket(
-        'wss://' + window.location.host + '/ws/doc/'+sess
+        'ws://' + window.location.host + '/ws/doc/'+sess
     );
     docWebSocket.onopen=(e)=>{
         let fr = new FileReader();
@@ -210,7 +199,7 @@ async function send_metaData(DataChann, file){
 }
 async function send_chunks(DataChann, file){
     console.log("sending chunks of "+file.name);
-    let chunk = 8 * 1024  //* 1024;
+    let chunk = 16 * 1024  //* 1024;
     let left = file.size;
     let offset = 0;
     let slice;
@@ -355,8 +344,8 @@ function startRecording() {
     }
     mediaRecorder.ondataavailable = (event)=>{
         if(event.data && event.data.size>0){
-            console.log("sending..", event.data);
-            recordedBlobs.push(event.data);
+            // console.log("sending..", event.data);
+            // recordedBlobs.push(event.data);
             videoSocket.send(event.data);
         }
     }
@@ -413,12 +402,13 @@ webCamSocket.onclose = (event)=>{
 }
 webCamSocket.onmessage = (event)=>{
     let data = JSON.parse(event.data);
-    console.log("websocket recieved a message..",data.recv);
+    // console.log("websocket recieved a message..",data.recv);
     console.log(data.message);
     if(data.recv == "answer"){
         console.log("recieved a answer..");
         let ansDesc = data["answer"];
         user = data["by"]
+        console.log(Users[user]);
         let Conn = Users[user]["conn"];
         (new Promise(async (resolve, reject)=>{
             console.log("getting a session object from answer");
@@ -455,7 +445,7 @@ webCamSocket.onmessage = (event)=>{
     }
     else if(data.recv == "close_broadcast"){
         console.log("a peer left..");
-        if(Users[data.user]){
+        if(typeof Users[data.user] != "undefined"){
             Users[data.user]["conn"].close();
             Users[data.user]["datachann"].close();
             delete Users[data.user];
@@ -469,7 +459,7 @@ webCamSocket.onmessage = (event)=>{
     else if(data.recv == "open_broadcast"){
         console.log(data.open_broadcast); 
         user = data.user;
-        if(Users[user] === undefined){
+        if(typeof Users[user] == "undefined"){
         // console.log(peers.innerText, userCnt);
             Users[user] = {
                 "userId" : data.userId,
@@ -504,12 +494,13 @@ webCamSocket.onmessage = (event)=>{
                 }
             };
             Conn.oniceconnectionstatechange = (event)=>{
-                console.log("handling the connection change...");
-                if(U){
-                    delete Users[u];
+                let state = Conn.iceConnectionState;
+                console.log("state of connection is ", state);
+                if(state == "closed" || state == "disconnected" || state == "failed"){
+                    if(Conn){
+                        offer(Conn, user);
+                    }
                 }
-                peers.innerText = "Active "+(Object.keys(Users).length);
-                console.log("state of connection is ", Conn.iceConnectionState);
             };
             Conn.onerror = (event)=>{
                 peers.innerText = "Active "+(Object.keys(Users).length);
