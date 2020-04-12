@@ -25,9 +25,18 @@ let sendmsg = document.getElementById("submit");
 let txt = document.getElementById("txt");
 let close = document.getElementById("close");
 
-// window.onload= (e)=>{
-//     btn_live.click();
-// }
+window.onbeforeunload = (e)=>{
+    if(webCamSocket){
+        webCamSocket.close();
+    };
+    if(videoSocket){
+        videoSocket.close();
+    }
+    if(docWebSocket){
+        docWebSocket.close();
+    }
+    if()
+}
 close.onclick=(e)=>{
     stopStreaming();
     liveTag.style.opacity=0;
