@@ -13,7 +13,7 @@ import os
 import json
 import pickle
 import base64
-# import ffmpeg
+import ffmpeg
 
 class docConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
@@ -43,9 +43,14 @@ class docConsumer(AsyncConsumer):
 class videoConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         self.sess = self.scope["url_route"]["kwargs"]["sess"]
-        if not os.path.isdir("media/{}".format(self.sess)):
-            os.mkdir("media/{}".format(self.sess))
-        self.temp = open("media/{}/{}_{date:%Y-%m-%d_%H:%M:%S}.webm".format(self.sess, self.sess, date=dt.datetime.now()), "wb")
+        root = "media/{}".format(self.sess)
+        if not os.path.isdir(root):
+            os.mkdir(root)
+        dir = os.path.join(root, "{date:%m-%d}".format(date=dt.datetime.now()))
+        if not os.path.isdir(dir):
+            os.mkdir(dir)
+        self.vid = os.path.join(dir, '{}_{date:%H-%M}.webm'.format(self.sess, date=dt.datetime.now()))
+        self.temp = open(self.vid, "wb")
 
         await self.send({
             "type": "websocket.accept",
@@ -54,6 +59,15 @@ class videoConsumer(AsyncConsumer):
 
     async def websocket_disconnect(self, event):
         self.temp.close()
+        out = self.vid.split(".")[0]+".mp4"
+        process = (
+            ffmpeg
+            .input(self.vid)
+            # .filter('hflip')
+            .output(out, f="mp4", s="640x480", acodec="aac", vcodec="h264", pix_fmt='yuv420p')
+            .run()
+        )
+        os.remove(self.vid)
         await self.send({
             "type" : "websocket.close",
         })
