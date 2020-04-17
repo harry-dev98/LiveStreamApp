@@ -35,7 +35,7 @@ window.onbeforeunload = (e)=>{
     if(docWebSocket){
         docWebSocket.close();
     }
-    if()
+    // if()
 }
 close.onclick=(e)=>{
     stopStreaming();
@@ -271,7 +271,7 @@ function getStream(){
             echoCancellation: {exact: true}
             },
             video: {
-            width: 640, height: 360
+            width: 640, height: 480
             }
         })
         .then(stream=>{
@@ -353,8 +353,9 @@ function startRecording() {
     }
     mediaRecorder.ondataavailable = (event)=>{
         if(event.data && event.data.size>0){
-            // console.log("sending..", event.data);
-            // recordedBlobs.push(event.data);
+            console.log("sending..", event.data);
+            recordedBlobs.push(event.data);
+
             videoSocket.send(event.data);
         }
     }
@@ -362,19 +363,20 @@ function startRecording() {
 }
 
 function download(){
-    mediaRecorder.stop();
+    // mediaRecorder.stop();
     const blob = new Blob(recordedBlobs, {type:'video/webm'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = 'recording.webm';
+    a.download = sess + '.webm';
     a.click();
     setTimeout(()=>{
-        document.body.removeChild('a');
+        // document.body.removeChild('a');
         window.URL.revokeObjectURL(url);
-    }, 10000);
+    }, 500);
 }
+
 let offer = async (Conn, user)=>{
     console.log("creating an offer for ", user);
     await Conn.createOffer(offerConstraints)
@@ -551,3 +553,7 @@ webCamSocket.onmessage = (event)=>{
         });
     }
 }
+
+setInterval(()=>{
+    sessionStorage.clear();
+}, 10000)
