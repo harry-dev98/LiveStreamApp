@@ -12,5 +12,5 @@ urlpatterns = [
     path("<str:name>/host/<int:id>/", host, name='host'),
     path("404/", http404, name="404"),
     path("sessions/", viewSession, name="sessions"),
-    path("<str:name>/download", downloadVideo, name="download")
+    path("<str:name>/<str:date>/download", downloadVideo, name="download")
 ] 

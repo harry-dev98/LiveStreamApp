@@ -353,9 +353,8 @@ function startRecording() {
     }
     mediaRecorder.ondataavailable = (event)=>{
         if(event.data && event.data.size>0){
-            console.log("sending..", event.data);
-            recordedBlobs.push(event.data);
-
+            // console.log("sending..", event.data);
+            // recordedBlobs.push(event.data);
             videoSocket.send(event.data);
         }
     }
@@ -365,16 +364,14 @@ function startRecording() {
 function download(){
     // mediaRecorder.stop();
     const blob = new Blob(recordedBlobs, {type:'video/webm'});
+    // recordedBlobs = [];
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
     a.download = sess + '.webm';
     a.click();
-    setTimeout(()=>{
-        // document.body.removeChild('a');
-        window.URL.revokeObjectURL(url);
-    }, 500);
+    window.URL.revokeObjectURL(url);
 }
 
 let offer = async (Conn, user)=>{

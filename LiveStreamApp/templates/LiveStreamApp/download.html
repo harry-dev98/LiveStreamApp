@@ -47,10 +47,12 @@
         let linkBox = document.getElementById("links");
         let dirs = {{dirs | safe}};
         let sess = '{{sess | safe}}';
+        let date = '{{date}}';
         dirs.forEach((dir)=>{
             let a = document.createElement('a');
-            a.href = "http://"+window.location.host+"/media/"+sess+"/"+dir;
+            a.href = "http://"+window.location.host+"/media/"+sess+"/"+date+"/"+dir;
             a.innerHTML = dir;
+            a.download = dir;
             a.style.fontSize = '30px';
             a.style.color = 'white'; 
             linkBox.appendChild(a);

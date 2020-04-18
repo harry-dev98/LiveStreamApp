@@ -136,6 +136,7 @@ def webinar(request):
     return render_to_response("LiveStreamApp/base.html")
 
 
-def downloadVideo(request, name):
-    dirs = os.listdir("./media/" + name)
-    return render_to_response("LiveStreamApp/download.html", {"sess":name, "dirs": (dirs)})
+def downloadVideo(request, name, date):
+    dir = os.path.join("./media/" , name, date)
+    dirs = os.listdir(dir)
+    return render_to_response("LiveStreamApp/download.html", {"sess":name, "date":date, "dirs": (dirs)})
