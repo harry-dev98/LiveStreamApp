@@ -1,0 +1,138 @@
+.myBtn {
+    border-radius: 8%;
+    width: 100px;
+    font-size: 18px;
+    padding: 5px;
+    border: none;
+    background: #000;
+    color: #fff;
+    cursor: pointer;
+}
+.btnDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+.myBtn:hover {
+background: #ddd;
+color: black;
+}
+
+#video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.content {
+    position: fixed;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f1f1f1;
+    width: 100%;
+    padding: 20px;
+}
+
+#rightArrow{
+    position: absolute;
+    top: 50%;
+    right: 0;
+    font-size: 100px;
+    color: blue;
+    border-color: transparent;
+    background-color: transparent;
+}
+
+#leftArrow{
+    position: absolute;
+    top: 50%;
+    left: 0;
+    font-size: 100px;
+    color: blue;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+#chat-box{
+    position: fixed;
+    background: rgba(0, 0, 0, 0.5);
+    width: 18%;
+    bottom: 20%;
+    top: 10%;
+    border-radius: 15%;
+    overflow: scroll;
+}
+#msging{
+    position: fixed;
+    bottom: 10%;
+    width: 20%;
+}
+
+#msg-box{
+    float: left;
+    width: 80%;
+    padding: 1%;
+    /* margin: 1%; */
+}
+
+#msg-send{
+    float: right;
+    padding: 1%;
+    font-size: xx-large;
+    color: blue;
+    background-color: transparent;
+    border-color: transparent;
+}
+
+#msg-left{
+    position: relative;
+    left: 10%;
+    width: 40%;
+}
+
+#msg-right{
+    position: relative;
+    left: 50%;
+    width: 40%;
+}
+.leftContent {
+    display: none;
+    position: fixed;
+    top : 0;
+    left: 0;
+    /* background: rgba(0, 0, 0, 0.5); */
+    color: #f1f1f1;
+    height: 100%;
+    width: 22%;
+    padding: 10px;
+}
+.rightContent {
+    display: none;
+    overflow: scroll;
+    position: fixed;
+    top : 0;
+    right: 0;
+    /* background: rgba(0, 0, 0, 0.5); */
+    color: #f1f1f1;
+    height: 100%;
+    width: 12%;
+    padding: 10px;
+}
+/* Style the button used to pause/play the video */
+
+
+.peer-video{
+    border-radius: 15%;
+    height: 25%;
+    width: 85%;
+    padding: 4%;
+    margin: 1%;
+}
+.video-mask{
+    top : 0;
+    position: relative;
+    
+}
