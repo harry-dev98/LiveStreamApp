@@ -1,0 +1,45 @@
+{% extends 'LiveStreamApp/base.html' %}
+{% load static %}
+
+{% block prescript %}
+<script src='{% static "LiveStreamApp/jss/adapter.js"%}'></script>
+
+<script>
+    var sess = '{{sess}}';
+    var id = '{{id}}';
+    var name = '{{name}}';
+
+    let messageSocket = new WebSocket('ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"host_"+id + "/msg");
+    messageSocket.onclose = (e)=>{
+        console.log("closed");
+        alert("refresh page");
+    }
+    messageSocket.onopen = (e)=>{
+        messageSocket.send(JSON.stringify({
+            "hi" : 1
+        }))
+    }
+    
+    let signalSocket = new WebSocket('ws://' + window.location.host + '/ws/rooms/'+sess+'/'+"host_"+id + "/signal");
+    signalSocket.onclose = (e)=>{
+        console.log("closed");
+        alert("refresh page");
+    }
+    signalSocket.onopen = (e)=>{
+        signalSocket.send(JSON.stringify({
+            "hi" : 1
+        }))
+    }
+    
+
+</script>
+{% endblock %}
+
+
+{% block content %}
+{% endblock %}
+
+{% block postscript %}
+<script src='{% static "LiveStreamApp/jss/host.js"%}'></script>
+<link rel="stylesheet" href="{% static 'LiveStreamApp/css/host.css' %}">
+{% endblock %}

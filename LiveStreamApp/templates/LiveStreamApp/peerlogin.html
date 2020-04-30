@@ -1,0 +1,60 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Zedd Conference</title>
+    <link rel="stylesheet" href="{%static 'LiveStreamApp/css/framework7.css'%}">
+    <link rel="stylesheet" href="{%static 'LiveStreamApp/css/style.css'%}">
+    <link type="text/css" rel="stylesheet" href="{%static 'LiveStreamApp/css/swipebox.css'%}" />
+
+    <style>
+    .toolbar::before{
+        background-color:transparent !important;
+    }
+    .blink{
+    color:white;
+        padding:10px;box-sizing:border-box;background-color:rgb(42, 41, 56);
+        border-radius:5px;
+    }
+    </style>
+</head>
+<body id="mobile_wrap">
+    <div class="views">
+        <div class="view view-main">
+            <div class="navbar">
+                <div class="navbar-inner">
+                    <div class="left sliding"><div class="logo_title">Zedd Conference</div></div>
+                    
+                </div>
+            </div>
+            <div class="container">
+                <div data-page="index" class="page homepage">
+                <br><br><br>
+                    <div class="page-content" style="padding:50px;box-sizing:border-box">
+                        <!-- Slider -->
+                        <center><h1 style="color:white;font-size:32px;">Student Login</h1></center>
+                        <div class="container" >
+                            <form class="loginform" method="POST">
+                                {%csrf_token%}
+                                <label>Name:</label>
+                                <input type="text" name="username" value="" class="form_input required" />
+                                <label>Class:</label>
+                                <input type="text" name="class" value="" class="form_input required" />
+                                <label>Section:</label>
+                                <input type="text" name="section" value="" class="form_input required" />
+                                <label>Mobile:</label>
+                                <input type="number" name="mobile" value="" class="form_input" />
+                                <center><input type="submit" name="submit" class="blink" id="submit" value="Login" /></center>
+                
+                            </form>      
+                        </div>  
+                    </div>
+                </div>  
+            </div>   
+        </div>  
+    </body>
+</html>

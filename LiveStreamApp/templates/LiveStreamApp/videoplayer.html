@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>Zedd Conference</title>
+    <link rel="stylesheet" href="{%static 'LiveStreamApp/css/framework7.css'%}">
+    <link rel="stylesheet" href="{%static 'LiveStreamApp/css/style.css'%}">
+    <link type="text/css" rel="stylesheet" href="{%static 'LiveStreamApp/css/swipebox.css'%}" />
+
+    <style>
+    .toolbar::before{
+        background-color:transparent !important;
+    }
+    .blink{
+    color:white;
+        padding:10px;box-sizing:border-box;background-color:rgb(42, 41, 56);
+        border-radius:5px;
+    }
+    </style>
+</head>
+<body id="mobile_wrap">
+    <div class="views">
+        <div class="view view-main">
+            <div class="navbar">
+                <div class="navbar-inner">
+                    <div class="left sliding"><div class="logo_title">Zedd Conference</div></div>
+                    
+                </div>
+            </div>
+            <div class="container">
+                <div data-page="index" class="page homepage">
+                <br><br><br>
+                    <div class="page-content" style="padding:50px;box-sizing:border-box">
+                        <!-- Slider -->
+                        <div id="links" class="container" >
+                        </div>  
+                    </div>
+                </div>  
+            </div>   
+        </div>  
+    </body>
+    <script>
+        let linkBox = document.getElementById("links");
+        let dirs = {{dirs | safe}};
+        let sess = '{{sess | safe}}';
+        dirs.forEach((dir)=>{
+            let a = document.createElement('a');
+            a.href = "http://"+window.location.host+"/media/"+sess+"/"+dir;
+            a.innerHTML = dir;
+            a.style.fontSize = '30px';
+            a.style.color = 'white'; 
+            linkBox.appendChild(a);
+            linkBox.appendChild(document.createElement("br"));
+        });
+    </script>
+</html>

@@ -1,0 +1,151 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Vuje.Com</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="ZeddLabz">
+    <link rel="stylesheet" href='{% static "LiveStreamApp/css/base.css" %}'>
+</head>
+
+{% block prescript %}
+{% endblock %}
+<body>
+  <p style="opacity: 0;" id="live" class="glow"> <b><mark id="mark"><b><font color="white">Live!</font></b></mark> </p>
+  <video autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" id="video">
+      <source src="" >
+  </video>
+  <div><button id="rightArrow">&laquo</button></div>
+  <div><button id="leftArrow">&raquo</button></div>
+  <div class="leftContent">
+    <div id="chat-box">
+      <p id="msg-left">Hello</p>
+      <p id="msg-right">Hey there!!</p>
+      <p id="msg-left">Hello</p>
+      <p id="msg-right">Hey there!!</p>
+      <p id="msg-left">Hello</p>
+      <p id="msg-right">Hey there!!</p>
+      <p id="msg-left">Hello</p>
+      <p id="msg-right">Hey there!!</p>
+      <p id="msg-left">Hello</p>
+      <p id="msg-right">Hey there!!</p>
+      <p id="msg-left">Hello</p>
+      <p id="msg-left">Hey there!! ipsum.. qqqqqqqwqwdasdajl adfklajak aksdjakldja aksjdklajdakljd aksdjakldjakldjaklj sdjlfjsklfoa aoidjak</p>
+      <p id="msg-right">Hey there!! ipsum.. qqqqqqqwqwdasdajl adfklajak aksdjakldja aksjdklajdakljd aksdjakldjakldjaklj sdjlfjsklfoa aoidjak</p>
+    </div>
+    <div id="msging">
+        <input id="msg-box" type="text">
+        
+        <input type="submit" onclick="sendMsg()" value="&#8617;" id="msg-send">
+    </div>
+  </div>
+  <div class="rightContent">
+      <!-- Use a button to pause/play the video with JavaScript -->
+      <div class="video-mask">
+          <video autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" onclick="vidExchange()" class="peer-video"></video>
+      </div>
+      <div class="video-mask">
+          <video autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" onclick="vidExchange()" class="peer-video"></video>
+      </div>
+      <div class="video-mask">
+          <video autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" onclick="vidExchange()" class="peer-video"></video>
+      </div>
+      <div class="video-mask">
+          <video autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" onclick="vidExchange()" class="peer-video"></video>
+      </div>  
+      <div class="video-mask">
+          <video autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" onclick="vidExchange()" class="peer-video"></video>
+      </div>
+      <div class="video-mask">
+          <video  autoplay muted loop poster="{% static 'LiveStreamApp/images/poster.jpg' %}" onclick="vidExchange()" class="peer-video"></video>
+      </div>
+  </div>
+   
+    <div class="content">
+        <!-- <p></p> -->
+        <div id="btnDiv">
+            <center>
+                <button class="myBtn" id="play" onclick="play()">Pause</button>
+                <button class="myBtn" id="mute" onclick="mute()">Mute</button>
+            </center>
+        </div>
+    </div>
+    {% block content %}
+    {% endblock %}
+</body>
+<script>
+    var video = document.getElementById("myVideo");
+    var btn = document.getElementById("play");
+    var mutebtn = document.getElementById("mute");
+    function mute(){
+        if(video.muted){
+            video.muted = false;
+            mutebtn.innerHTML = "Unmute";
+        }
+        else{
+            video.muted = true;
+            mutebtn.innerHTML = "Mute";
+        }
+    }
+    function play() {
+      if (video.paused) {
+        video.play();
+        btn.innerHTML = "Pause";
+      } else {
+        video.pause();
+        btn.innerHTML = "Play";
+      }
+    }
+    var larrow = document.getElementById("leftArrow");
+    var rarrow = document.getElementById("rightArrow");
+    var lcont = document.getElementsByClassName("leftContent")[0];
+    var rcont = document.getElementsByClassName("rightContent")[0];
+    larrow.onclick=(e)=>{
+      larrow.innerHTML = "";
+      lcont.style.display = "block";
+    }
+    lcont.onmouseleave=(e)=>{
+        setTimeout(()=>{
+            lcont.style.display = "none";
+            larrow.innerHTML="&raquo";
+        }, 1000);
+        larrow.blur();
+    }
+    rarrow.onclick=(e)=>{
+      rarrow.innerHTML = "";
+      rcont.style.display = "block";
+    }
+    rcont.onmouseleave=(e)=>{
+        setTimeout(()=>{
+            rcont.style.display = "none";
+            rarrow.innerHTML="&laquo";
+        }, 5000);
+        rarrow.blur();
+    }
+
+    var peervid = Array.from(document.getElementsByClassName("peer-video"));
+    let activepeervid;
+    function vidExchange(e){
+        peervid.forEach(element => {
+            if(document.activeElement === element){
+                activepeervid = element;
+            }
+        });
+        activepeervid.pause();
+        video.pause();
+        var srcObj = video.srcObject;
+        video.srcObject=activepeervid.srcObject;
+        activepeervid.srcObject = srcObj;
+        activepeervid.load();
+        activepeervid.play();
+        video.load();
+        video.play();
+    }
+
+</script>
+{% block postscript %}
+{% endblock %}
+</html>
